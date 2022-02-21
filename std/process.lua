@@ -1,14 +1,14 @@
 ---@class processlib
 ---@field argv string[]
----@field pid pid
+---@field pid pid_t
 local process = {}
 
----@alias pid integer
+---@alias pid_t integer
 
----@return path
+---@return path_t
 function process.cwd() end
 
----@param pid pid
+---@param pid pid_t
 ---@param signal string
 function process.kill(pid, signal) end
 

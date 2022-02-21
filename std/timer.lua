@@ -28,3 +28,5 @@ timer.clearTimeout = timer.clearInterval
 ---@param callback function
 ---@param ... any
 function timer.setImmediate(callback, ...) end
+
+return timer

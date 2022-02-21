@@ -22,3 +22,4 @@ function process.memoryUsage() end
 ---@return { user: number, system: number }
 function process.cpuUsage() end
 
+return process

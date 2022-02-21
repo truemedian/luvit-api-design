@@ -20,3 +20,5 @@ function querystring.stringify(table, separator_char, equals_char) end
 ---@param equals_char? string
 ---@return table
 function querystring.parse(str, separator_char, equals_char) end
+
+return querystring

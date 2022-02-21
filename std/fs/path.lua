@@ -99,6 +99,8 @@ function path.windows.extension(path) end
 ---@return path
 function path.windows.relative(from, to) end
 
+-- These are provided for easy access to the current platform's path functions.
+
 path.isAbsolute = path.posix.isAbsolute
 path.isUNC = path.posix.isUNC
 path.isDriveRelative = path.posix.isDriveRelative

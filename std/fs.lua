@@ -171,9 +171,10 @@ function fs.write(fd, data, offset) end
 --- Functions to provide easier API
 
 ---@param path path_t
+---@param size? integer
 ---@param offset? integer
 ---@return string
-function fs.readFile(path, offset) end
+function fs.readFile(path, size, offset) end
 
 ---@param path path_t
 ---@param data string

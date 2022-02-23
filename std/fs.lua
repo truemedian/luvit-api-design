@@ -34,11 +34,6 @@ function fs.chown(path, uid, gid) end
 ---@param mode? { excl: boolean, ficlone: boolean, ficlone_force: boolean }|integer
 function fs.copyfile(path, new_path, mode) end
 
--- note: implement with `not not stat`?
----@param path path_t
----@return boolean
-function fs.exists(path) end
-
 ---@param path path_t
 ---@param newPath path_t
 ---@return boolean
@@ -170,10 +165,16 @@ function fs.write(fd, data, offset) end
 
 --- Functions to provide easier API
 
+-- note: implement with `not not stat`?
 ---@param path path_t
+---@return boolean
+function fs.exists(path) end
+
+---@param path path_t
+---@param size? integer
 ---@param offset? integer
 ---@return string
-function fs.readFile(path, offset) end
+function fs.readFile(path, size, offset) end
 
 ---@param path path_t
 ---@param data string

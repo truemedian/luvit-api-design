@@ -1,6 +1,8 @@
 
 # Luvit 3.0 API Design
 
+[Style Guide](https://github.com/truemedian/luvit-api-design/blob/master/style.md)
+
 The files provided here are just an idea, and only represent a potential path
 that these libraries may be taken.
 
@@ -17,7 +19,7 @@ However, to keep this repository simple for EmmyLua to handle: requires should u
 
 For example: `/std/fs/path.lua` is required with `require 'std.fs.path'`.
 
-## Reimplmentations or Reworkings
+## Reimplementations or Reworkings
 
 ### Luvit
 

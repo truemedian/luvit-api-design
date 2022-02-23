@@ -9,90 +9,90 @@ path.posix = {}
 ---@class pathlib_windows
 path.windows = {}
 
----@param path path_t
+---@param pathname path_t
 ---@return boolean
-function path.posix.isAbsolute(path) end
+function path.posix.isAbsolute(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return boolean
-function path.posix.isUNC(path) end
+function path.posix.isUNC(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return boolean
-function path.posix.isDriveRelative(path) end
+function path.posix.isDriveRelative(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return path_t
-function path.posix.normalize(path) end
+function path.posix.normalize(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return path_t
-function path.posix.getRoot(path) end
+function path.posix.getRoot(pathname) end
 
 ---@param paths path_t[]
 ---@return path_t
 function path.posix.join(paths) end
 
----@param path path_t
+---@param pathname path_t
 ---@return path_t
-function path.posix.resolve(path) end
+function path.posix.resolve(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return path_t
-function path.posix.dirname(path) end
+function path.posix.dirname(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return string
-function path.posix.basename(path) end
+function path.posix.basename(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return string
-function path.posix.extension(path) end
+function path.posix.extension(pathname) end
 
 ---@param from path_t
 ---@param to path_t
 ---@return path_t
 function path.posix.relative(from, to) end
 
----@param path path_t
+---@param pathname path_t
 ---@return boolean
-function path.windows.isAbsolute(path) end
+function path.windows.isAbsolute(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return boolean
-function path.windows.isUNC(path) end
+function path.windows.isUNC(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return boolean
-function path.windows.isDriveRelative(path) end
+function path.windows.isDriveRelative(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return path_t
-function path.windows.normalize(path) end
+function path.windows.normalize(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return path_t
-function path.windows.getRoot(path) end
+function path.windows.getRoot(pathname) end
 
 ---@param paths path_t[]
 ---@return path_t
 function path.windows.join(paths) end
 
----@param path path_t
+---@param pathname path_t
 ---@return path_t
-function path.windows.resolve(path) end
+function path.windows.resolve(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return path_t
-function path.windows.dirname(path) end
+function path.windows.dirname(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return string
-function path.windows.basename(path) end
+function path.windows.basename(pathname) end
 
----@param path path_t
+---@param pathname path_t
 ---@return string
-function path.windows.extension(path) end
+function path.windows.extension(pathname) end
 
 ---@param from path_t
 ---@param to path_t

@@ -24,7 +24,7 @@ Acronyms, initialisms, proper nouns, or any other word that has capitalization r
 naming conventions just like any other word.
 
 File names fall into two categories: classes and namespaces. If the file returns a class-like table, it should be named
-like any other struct with fields using `TitleCase`. Otherwise, it should use `snake_case`. Directory names should be
+like any other class-like using `TitleCase`. Otherwise, it should use `snake_case`. Directory names should be
 `snake_case`.
 
 These are general rules of thumb; if it makes sense to do something different, do what makes sense. For example, if

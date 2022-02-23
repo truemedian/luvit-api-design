@@ -38,16 +38,10 @@ function path.posix.join(paths) end
 function path.posix.resolve(pathname) end
 
 ---@param pathname path_t
----@return path_t
-function path.posix.dirname(pathname) end
-
----@param pathname path_t
----@return string
-function path.posix.basename(pathname) end
-
----@param pathname path_t
----@return string
-function path.posix.extension(pathname) end
+---@return path_t dirname
+---@return string basename
+---@return string extension
+function path.posix.nameSplit(pathname) end
 
 ---@param from path_t
 ---@param to path_t
@@ -83,16 +77,10 @@ function path.windows.join(paths) end
 function path.windows.resolve(pathname) end
 
 ---@param pathname path_t
----@return path_t
-function path.windows.dirname(pathname) end
-
----@param pathname path_t
----@return string
-function path.windows.basename(pathname) end
-
----@param pathname path_t
----@return string
-function path.windows.extension(pathname) end
+---@return path_t dirname
+---@return string basename
+---@return string extension
+function path.windows.nameSplit(pathname) end
 
 ---@param from path_t
 ---@param to path_t
@@ -108,9 +96,7 @@ path.normalize = path.posix.normalize
 path.getRoot = path.posix.getRoot
 path.join = path.posix.join
 path.resolve = path.posix.resolve
-path.dirname = path.posix.dirname
-path.basename = path.posix.basename
-path.extension = path.posix.extension
+path.nameSplit = path.posix.nameSplit
 path.relative = path.posix.relative
 
 return path

@@ -34,6 +34,10 @@ function path.posix.getRoot(pathname) end
 function path.posix.join(paths) end
 
 ---@param pathname path_t
+---@return path_t[]
+function path.posix.split(pathname) end
+
+---@param pathname path_t
 ---@return path_t
 function path.posix.resolve(pathname) end
 
@@ -79,6 +83,10 @@ function path.windows.getRoot(pathname) end
 function path.windows.join(paths) end
 
 ---@param pathname path_t
+---@return path_t[]
+function path.windows.split(pathname) end
+
+---@param pathname path_t
 ---@return path_t
 function path.windows.resolve(pathname) end
 
@@ -107,6 +115,7 @@ path.isDriveRelative = path.posix.isDriveRelative
 path.normalize = path.posix.normalize
 path.getRoot = path.posix.getRoot
 path.join = path.posix.join
+path.split = path.posix.split
 path.resolve = path.posix.resolve
 path.dirname = path.posix.dirname
 path.basename = path.posix.basename

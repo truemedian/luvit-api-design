@@ -1,4 +1,4 @@
----@class theme
+---@class Theme
 ---@field property string
 ---@field sep string
 ---@field braces string
@@ -17,51 +17,51 @@
 ---@field success string
 ---@field failure string
 ---@field highlight string
-local _theme = {}
+local _Theme = {}
 
 ---@alias uv_stream_t userdata
 
----@class prettyprintlib
----@field themes table<integer, theme>
----@field currentTheme theme
+---@class pretty_printlib
+---@field themes table<integer, Theme>
+---@field current_theme Theme
 ---@field stdin uv_stream_t
 ---@field stdout uv_stream_t
 ---@field stderr uv_stream_t
-local prettyPrint = {}
+local pretty_print = {} -- TODO: Come up with a better name
 
 --- Functions that print something
 
 ---@vararg string
-function prettyPrint.prettyPrint(...) end
+function pretty_print.prettyPrint(...) end
 
 ---@vararg string
-function prettyPrint.print(...) end
+function pretty_print.print(...) end
 
 -- Functions that transform strings
 
 ---@param str string
 ---@param depth? integer
----@param noColor? boolean
+---@param no_color? boolean
 ---@return string
-function prettyPrint.dump(str, depth, noColor) end
+function pretty_print.dump(str, depth, no_color) end
 
 ---@param str string
 ---@return string
-function prettyPrint.strip(str) end
+function pretty_print.strip(str) end
 
----@param colorName string
+---@param color_name string
 ---@return string
-function prettyPrint.color(colorName) end
+function pretty_print.color(color_name) end
 
 ---@param str string
----@param colorName string
----@param resetName string
+---@param color_name string
+---@param reset_name string
 ---@return string
-function prettyPrint.colorize(str, colorName, resetName) end
+function pretty_print.colorize(str, color_name, reset_name) end
 
 --- Functions that modify the current theme
 
----@param theme theme|integer
-function prettyPrint.setTheme(theme) end
+---@param theme Theme|integer
+function pretty_print.setTheme(theme) end
 
-return prettyPrint
+return pretty_print

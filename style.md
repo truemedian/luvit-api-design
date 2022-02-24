@@ -20,6 +20,9 @@ Roughly speaking: `camelCaseFunctionName`, `TitleCaseClassName`, `snake_case_var
 - if `x` is otherwise callable, then `x` should be `camelCase`.
 - otherwise, `x` should be `snake_case`.
 
+A class-like table can be identified by having one or more fields that are intended to hold data. For example,
+`std/fs.lua`, a namespace-like table, contains only functions and another namespace (`std/fs/path.lua`).
+
 Acronyms, initialisms, proper nouns, or any other word that has capitalization rules in written English are subject to
 naming conventions just like any other word.
 

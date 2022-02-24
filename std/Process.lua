@@ -1,24 +1,24 @@
 ---@class processlib
 ---@field argv string[]
 ---@field pid pid_t
-local process = {}
+local Process = {}
 
 ---@alias pid_t integer
 
 ---@return path_t
-function process.cwd() end
+function Process.cwd() end
 
 ---@param pid pid_t
 ---@param signal string
-function process.kill(pid, signal) end
+function Process.kill(pid, signal) end
 
 ---@param code integer
-function process.exit(code) end
+function Process.exit(code) end
 
 ---@return { rss: number, heap: number }
-function process.memoryUsage() end
+function Process.memoryUsage() end
 
 ---@return { user: number, system: number }
-function process.cpuUsage() end
+function Process.cpuUsage() end
 
-return process
+return Process

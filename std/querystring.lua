@@ -3,11 +3,11 @@ local querystring = {}
 
 ---@param str string
 ---@return string
-function querystring.urlencode(str) end
+function querystring.encodeString(str) end
 
 ---@param str string
 ---@return string
-function querystring.urldecode(str) end
+function querystring.decodeString(str) end
 
 ---@param table table
 ---@param separator_char? string

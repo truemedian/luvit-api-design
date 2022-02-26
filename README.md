@@ -41,7 +41,7 @@ For example: `/std/fs/path.lua` is required with `require 'std.fs.path'`.
 - [ ] json
 - [ ] net
 - [x] pathjoin
-- [ ] pretty-print
+- [x] pretty-print
 - [x] process
 - [x] querystring
 - [ ] readline

@@ -29,7 +29,7 @@ For example: `/std/fs/path.lua` is required with `require 'std.fs.path'`.
 - [ ] buffer
 - [ ] childprocess
 - [ ] codec
-- [ ] core
+- [x] core (as std.class and std.Emitter)
 - [ ] dgram
 - [ ] dns
 - [x] fs

@@ -1,13 +1,5 @@
----@class querystringlib
+---@class std.querystring
 local querystring = {}
-
----@param str string
----@return string
-function querystring.urlencode(str) end
-
----@param str string
----@return string
-function querystring.urldecode(str) end
 
 ---@param table table
 ---@param separator_char? string

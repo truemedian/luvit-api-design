@@ -1,14 +1,15 @@
----@class processlib
+---@class std.Process
 ---@field argv string[]
----@field pid pid_t
+---@field pid integer
 local Process = {}
 
----@alias pid_t integer
+---@return std.Process
+function Process.init() end
 
 ---@return path_t
 function Process.cwd() end
 
----@param pid pid_t
+---@param pid integer
 ---@param signal string
 function Process.kill(pid, signal) end
 

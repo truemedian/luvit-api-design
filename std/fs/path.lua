@@ -1,12 +1,10 @@
----@class pathlib
+---@class std.fs.path
 local path = {}
 
----@alias path_t string
-
----@class pathlib_posix
+---@class std.fs.path.posix
 path.posix = {}
 
----@class pathlib_windows
+---@class std.fs.path.windows
 path.windows = {}
 
 ---@param pathname path_t

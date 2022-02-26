@@ -1,15 +1,22 @@
----@class urilib
-local urilib = {}
+---@class std.uri
+local uri = {}
 
----@alias uri_t { scheme: string, authority?: string, userinfo?: string, hostname?: string, port?: number, path: string, query?: string|table<string, string>, fragment?: string }
+---@alias uri_info { scheme: string, authority?: string, userinfo?: string, hostname?: string, port?: number, path: string, query?: string, fragment?: string }
 
----@param info uri_t
+---@param str string
 ---@return string
-function urilib.encode(info) end
+function uri.percentEncode(str) end
 
----@param uri string
----@param parse_querystring boolean
----@return uri_t
-function urilib.decode(uri, parse_querystring) end
+---@param str string
+---@return string
+function uri.percentDecode(str) end
 
-return urilib
+---@param info uri_info
+---@return string
+function uri.encode(info) end
+
+---@param str string
+---@return uri_info
+function uri.decode(str) end
+
+return uri

@@ -1,6 +1,6 @@
 ---@class std.Emitter
 ---@field listeners table
-local Emitter = require('std.class')('std.Emitter')
+local Emitter = require('std.class').create('std.Emitter')
 
 function Emitter:init() end
 

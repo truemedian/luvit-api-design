@@ -60,7 +60,7 @@ For example: `/std/fs/path.lua` is required with `require 'std.fs.path'`.
 - [ ] coro-channel
 - [ ] coro-fs
 - [ ] coro-net
-- [x] coro-spawn
+- [x] coro-spawn (merged into std.ChildProcess)
 - [ ] coro-split
 - [ ] coro-websocket
 - [ ] coro-wrapper

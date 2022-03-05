@@ -55,7 +55,7 @@ For example: `/std/fs/path.lua` is required with `require 'std.fs.path'`.
 ### Lit (minus duplicates)
 
 - [ ] git
-- [ ] sha1
+- [x] sha1
 - [ ] base64
 - [ ] coro-channel
 - [ ] coro-fs

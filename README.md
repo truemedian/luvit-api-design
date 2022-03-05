@@ -27,7 +27,7 @@ For example: `/std/fs/path.lua` is required with `require 'std.fs.path'`.
 - [ ] stream
 - [ ] tls
 - [ ] buffer
-- [ ] childprocess
+- [x] childprocess
 - [ ] codec
 - [x] core (as std.class and std.Emitter)
 - [ ] dgram
@@ -60,7 +60,7 @@ For example: `/std/fs/path.lua` is required with `require 'std.fs.path'`.
 - [ ] coro-channel
 - [ ] coro-fs
 - [ ] coro-net
-- [ ] coro-spawn
+- [x] coro-spawn
 - [ ] coro-split
 - [ ] coro-websocket
 - [ ] coro-wrapper

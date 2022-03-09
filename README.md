@@ -28,13 +28,13 @@ For example: `/std/fs/path.lua` is required with `require 'std.fs.path'`.
 - [ ] tls
 - [ ] buffer
 - [x] childprocess
-- [ ] codec
+- [x] codec
 - [x] core (as std.class and std.Emitter)
 - [ ] dgram
 - [ ] dns
 - [x] fs
 - [ ] hooks
-- [ ] http-codec
+- [x] http-codec
 - [ ] http-header
 - [ ] http
 - [ ] https
@@ -68,7 +68,7 @@ For example: `/std/fs/path.lua` is required with `require 'std.fs.path'`.
 - [ ] prompt
 - [ ] semver
 - [ ] ssh-rsa
-- [ ] websocket-codec
+- [x] websocket-codec
 
 ### To Be Removed
 

@@ -48,7 +48,7 @@ For example: `/std/fs/path.lua` is required with `require 'std.fs.path'`.
 - [ ] resource
 - [ ] thread
 - [x] timer
-- [x] url
+- [x] url (as uri)
 - [ ] ustring
 - [ ] utils
 

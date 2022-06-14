@@ -2,7 +2,7 @@
 local codec = {}
 
 ---@alias std.codec.reader fun(): string
----@alias std.codec.writer fun(data: string)
+---@alias std.codec.writer fun(buffer: string)
 
 ---@alias std.codec.encoded_reader fun(): any
 ---@alias std.codec.encoded_writer fun(data: any)

@@ -37,7 +37,6 @@ For example: `/std/fs/path.lua` is required with `require 'std.fs.path'`.
 - [x] http-codec
 - [ ] http-header
 - [ ] http
-- [ ] https
 - [ ] json
 - [ ] net
 - [x] pathjoin
@@ -81,4 +80,5 @@ For example: `/std/fs/path.lua` is required with `require 'std.fs.path'`.
 - [ ] weblit-server: needs own repo
 - [ ] weblit-websocket: needs own repo
 - [ ] tls: replace with secure-socket
-- [ ] coro-http: merge with http, https and http-header
+- [ ] https: merge with http
+- [ ] coro-http: merge with http and http-header

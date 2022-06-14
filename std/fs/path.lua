@@ -44,8 +44,9 @@ function path.posix.resolve(pathname) end
 function path.posix.dirname(pathname) end
 
 ---@param pathname path_t
+---@param expected_ext string|true
 ---@return string
-function path.posix.basename(pathname) end
+function path.posix.basename(pathname, expected_ext) end
 
 ---@param pathname path_t
 ---@return string

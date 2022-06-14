@@ -1,14 +1,14 @@
 ---@class std.codec
 local codec = {}
 
----@alias std.codec.reader function function() -> string
----@alias std.codec.writer function function(string) -> nil
+---@alias std.codec.reader fun(): string
+---@alias std.codec.writer fun(data: string)
 
----@alias std.codec.encoded_reader function function() -> any
----@alias std.codec.encoded_writer function function(any) -> nil
+---@alias std.codec.encoded_reader fun(): any
+---@alias std.codec.encoded_writer fun(data: any)
 
----@alias std.codec.decoder function function(string, integer) -> any, integer
----@alias std.codec.encoder function function(any) -> string
+---@alias std.codec.decoder fun(data: string, offset: integer): any, integer
+---@alias std.codec.encoder fun(data: any): string
 
 codec.http = require('std.codec.http')
 

@@ -91,7 +91,7 @@ function fs.rmdir(path) end
 
 -- note: abstract over fs_scandir + fs_scandir_next
 ---@param path path_t
----@return function
+---@return fun(): string, string
 ---@error nil, string, string
 function fs.scandir(path) end
 

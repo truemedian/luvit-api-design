@@ -10,20 +10,20 @@ local timer = {}
 function timer.sleep(delay, thread) end
 
 ---@param delay number
----@param callback function
+---@param callback fun(...: any)
 ---@param ... any
 ---@return uv_timer_t
 ---@error nil, string, string
 function timer.delay(delay, callback, ...) end
 
 ---@param delay number
----@param callback function
+---@param callback fun(...: any)
 ---@param ... any
 ---@return uv_timer_t
 ---@error nil, string, string
 function timer.periodically(delay, callback, ...) end
 
----@param callback function
+---@param callback fun(...: any)
 ---@param ... any
 ---@error nil, string, string
 function timer.immediately(callback, ...) end

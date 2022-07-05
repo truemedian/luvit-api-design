@@ -5,13 +5,37 @@ local fs = {}
 
 fs.path = require('std.fs.path')
 
-
 ---@alias fd_t integer
 ---@alias path_t string
 
 ---@alias std.fs.stat_info { dev: integer, mode: integer, nlink: integer, uid: integer, gid: integer, rdev: integer, ino: integer, size: integer, blksize: integer, blocks: integer, flags: integer, gen: integer, atime: { sec: integer, nsec: integer }, mtime: { sec: integer, nsec: integer }, ctime: { sec: integer, nsec: integer }, birthtime: { sec: integer, nsec: integer }, type: string }
 
 ---@alias std.fs.statfs_info { type: integer, bsize: integer, blocks: integer, bfree: integer, bavail: integer, files: integer, ffree: integer }
+
+local function assertResume(thread, ...)
+    local success, err = coroutine.resume(thread, ...)
+    if not success then
+        error(debug.traceback(thread, err), 0)
+    end
+end
+
+local function wait()
+    local thread = coroutine.running()
+
+    return function(err, value, ...)
+        if err then
+            local errno = string.match(err, '^([^:]+)')
+
+            assertResume(thread, nil, err, errno)
+        else
+            if value == nil then
+                assertResume(thread, true, ...)
+            else
+                assertResume(thread, value, ...)
+            end
+        end
+    end
+end
 
 --- Functions that operate on paths
 
@@ -21,7 +45,9 @@ fs.path = require('std.fs.path')
 ---@return boolean
 ---@error nil, string, string
 function fs.access(path, flags)
-    return uv.fs_access(path, flags)
+    uv.fs_access(path, flags, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `chmod(2)` on Unix. See luv documentation for more information.
@@ -36,7 +62,9 @@ function fs.chmod(path, mode)
         mode = tonumber(mode, 8)
     end
 
-    return uv.fs_chmod(path, mode)
+    uv.fs_chmod(path, mode, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `chown(2)` on Unix. See luv documentation for more information.
@@ -46,7 +74,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.chown(path, uid, gid)
-    return uv.fs_chown(path, uid, gid)
+    uv.fs_chown(path, uid, gid, wait())
+
+    return coroutine.yield()
 end
 
 ---Copies a file from `path` to `new_path`. See luv documentation for more information.
@@ -56,7 +86,9 @@ end
 ---@return
 ---@error nil, string, string
 function fs.copyfile(path, new_path, mode)
-    return uv.fs_copyfile(path, new_path, mode)
+    uv.fs_copyfile(path, new_path, mode, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `link(2)` on Unix. See luv documentation for more information.
@@ -65,7 +97,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.link(path, new_path)
-    return uv.fs_link(path, new_path)
+    uv.fs_link(path, new_path, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `lstat(2)` on Unix. See luv documentation for more information.
@@ -73,7 +107,9 @@ end
 ---@return std.fs.stat_info
 ---@error nil, string, string
 function fs.lstat(path)
-    return uv.fs_lstat(path)
+    uv.fs_lstat(path, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `mkdir(2)` on Unix. See luv documentation for more information.
@@ -82,7 +118,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.mkdir(path, mode)
-    return uv.fs_mkdir(path, mode)
+    uv.fs_mkdir(path, mode, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `mkdtemp(3)` on Unix. See luv documentation for more information.
@@ -91,7 +129,9 @@ end
 ---@error nil, string, string
 
 function fs.mkdtemp(template)
-    return uv.fs_mkdtemp(template)
+    uv.fs_mkdtemp(template, wait())
+
+    return coroutine.yield()
 end
 
 ---@param path path_t
@@ -112,7 +152,9 @@ end
 ---@return path_t
 ---@error nil, string, string
 function fs.readlink(path)
-    return uv.fs_readlink(path)
+    uv.fs_readlink(path, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `realpath(3)` on Unix. See luv documentation for more information.
@@ -120,7 +162,9 @@ end
 ---@return path_t
 ---@error nil, string, string
 function fs.realpath(path)
-    return uv.fs_realpath(path)
+    uv.fs_realpath(path, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `rename(2)` on Unix. See luv documentation for more information.
@@ -129,7 +173,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.rename(path, new_path)
-    return uv.fs_rename(path, new_path)
+    uv.fs_rename(path, new_path, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `rmdir(2)` on Unix. See luv documentation for more information.
@@ -137,7 +183,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.rmdir(path)
-    return uv.fs_rmdir(path)
+    uv.fs_rmdir(path, wait())
+
+    return coroutine.yield()
 end
 
 -- note: abstract over fs_scandir + fs_scandir_next
@@ -145,7 +193,9 @@ end
 ---@return fun(): string, string
 ---@error nil, string, string
 function fs.scandir(path)
-    local req, err, errno = uv.fs_scandir(path)
+    uv.fs_scandir(path, wait())
+
+    local req, err, errno = coroutine.yield()
     if not req then
         ---@diagnostic disable-next-line: redundant-return-value, return-type-mismatch
         return nil, err, errno
@@ -166,7 +216,9 @@ end
 ---@return std.fs.stat_info
 ---@error nil, string, string
 function fs.stat(path)
-    return uv.fs_stat(path)
+    uv.fs_stat(path, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `symlink(2)` on Unix. See luv documentation for more information.
@@ -176,7 +228,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.symlink(path, new_path, flags)
-    return uv.fs_symlink(path, new_path, flags)
+    uv.fs_symlink(path, new_path, flags, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `unlink(2)` on Unix. See luv documentation for more information.
@@ -184,7 +238,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.unlink(path)
-    return uv.fs_unlink(path)
+    uv.fs_unlink(path, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `utime(2)` on Unix. See luv documentation for more information.
@@ -194,7 +250,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.utime(path, atime, mtime)
-    return uv.fs_utime(path, atime, mtime)
+    uv.fs_utime(path, atime, mtime, wait())
+
+    return coroutine.yield()
 end
 
 --- Functions that operate on file descriptors
@@ -213,7 +271,9 @@ function fs.open(path, flags, mode)
         mode = tonumber(mode, 8)
     end
 
-    return uv.fs_open(path, flags, mode)
+    uv.fs_open(path, flags, mode, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `close(2)` on Unix. See luv documentation for more information.
@@ -221,7 +281,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.close(fd)
-    return uv.fs_close(fd)
+    uv.fs_close(fd, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `fchmod(2)` on Unix. See luv documentation for more information.
@@ -236,7 +298,9 @@ function fs.fchmod(fd, mode)
         mode = tonumber(mode, 8)
     end
 
-    return uv.fs_fchmod(fd, mode)
+    uv.fs_fchmod(fd, mode, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `fchown(2)` on Unix. See luv documentation for more information.
@@ -246,7 +310,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.fchown(fd, uid, gid)
-    return uv.fs_fchown(fd, uid, gid)
+    uv.fs_fchown(fd, uid, gid, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `fdatasync(2)` on Unix. See luv documentation for more information.
@@ -254,7 +320,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.fdatasync(fd)
-    return uv.fs_fdatasync(fd)
+    uv.fs_fdatasync(fd, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `fstat(2)` on Unix. See luv documentation for more information.
@@ -262,7 +330,9 @@ end
 ---@return std.fs.stat_info
 ---@error nil, string, string
 function fs.fstat(fd)
-    return uv.fs_fstat(fd)
+    uv.fs_fstat(fd, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `fsync(2)` on Unix. See luv documentation for more information.
@@ -270,7 +340,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.fsync(fd)
-    return uv.fs_fsync(fd)
+    uv.fs_fsync(fd, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `ftruncate(2)` on Unix. See luv documentation for more information.
@@ -279,7 +351,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.ftruncate(fd, offset)
-    return uv.fs_ftruncate(fd, offset)
+    uv.fs_ftruncate(fd, offset, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `futime(2)` on Unix. See luv documentation for more information.
@@ -289,7 +363,9 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.futime(fd, atime, mtime)
-    return uv.fs_futime(fd, atime, mtime)
+    uv.fs_futime(fd, atime, mtime, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `preadv(2)` on Unix. See luv documentation for more information.
@@ -305,7 +381,9 @@ function fs.read(fd, size, offset)
         size = 4096
     end
 
-    return uv.fs_read(fd, size, offset)
+    uv.fs_read(fd, size, offset, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `sendfile(2)` on Unix. See luv documentation for more information.
@@ -318,7 +396,9 @@ end
 ---@return integer
 ---@error nil, string, string
 function fs.sendfile(out_fd, in_fd, in_offset, length)
-    return uv.fs_sendfile(out_fd, in_fd, in_offset, length)
+    uv.fs_sendfile(out_fd, in_fd, in_offset, length, wait())
+
+    return coroutine.yield()
 end
 
 ---Equivalent to `pwritev(2)` on Unix. See luv documentation for more information.
@@ -330,7 +410,9 @@ end
 ---@return integer
 ---@error nil, string, string
 function fs.write(fd, data, offset)
-    return uv.fs_write(fd, data, offset)
+    uv.fs_write(fd, data, offset, wait())
+
+    return coroutine.yield()
 end
 
 --- Functions to provide easier API

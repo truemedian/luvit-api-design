@@ -1,7 +1,7 @@
 ---@class std.codec
 local codec = {}
 
----@alias std.codec.reader fun(): string
+---@alias std.codec.reader fun(n: integer): string
 ---@alias std.codec.writer fun(buffer: string)
 
 ---@alias std.codec.encoded_reader fun(): any

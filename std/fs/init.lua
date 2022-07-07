@@ -83,7 +83,7 @@ end
 ---@param path path_t
 ---@param new_path path_t
 ---@param mode? { excl: boolean, ficlone: boolean, ficlone_force: boolean }
----@return
+---@return boolean
 ---@error nil, string, string
 function fs.copyfile(path, new_path, mode)
     uv.fs_copyfile(path, new_path, mode, wait())

@@ -53,10 +53,10 @@ function path.posix.getRoot(pathname)
 end
 
 ---Joins a list of paths together, does not duplicate path separators. Starts at the last absolute path if any are provided.
----@param paths path_t[]
+---@param ... path_t[]
 ---@return path_t
-function path.posix.join(paths)
-    local len = #paths
+function path.posix.join(...)
+    local len = select('#', ...)
 
     if len == 0 then
         return ""
@@ -65,7 +65,7 @@ function path.posix.join(paths)
     local i = len
     local absolute = false
     repeat
-        if path.posix.isAbsolute(paths[i]) then
+        if path.posix.isAbsolute(select(i, ...)) then
             absolute = true
             break
         end
@@ -81,7 +81,7 @@ function path.posix.join(paths)
     end
 
     while i <= len do
-        local sub = path.posix.split(paths[i])
+        local sub = path.posix.split(select(i, ...))
         for j = 1, #sub do
             parts[n] = sub[j]
             n = n + 1

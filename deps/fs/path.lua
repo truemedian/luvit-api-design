@@ -62,16 +62,16 @@ function path.posix.join(...)
         return ""
     end
 
-    local i = len
+    local i = len + 1
     local absolute = false
-    repeat
+    while i > 1 do
+        i = i - 1
+
         if path.posix.isAbsolute(select(i, ...)) then
             absolute = true
             break
         end
-
-        i = i - 1
-    until i <= 1
+    end
 
     local parts, n = {}, 1
 
@@ -145,8 +145,12 @@ end
 function path.posix.resolve(pathname, parent)
     local parts = path.posix.split(pathname)
 
+    local is_absolute = true
+
     if not path.posix.isAbsolute(pathname) then
         local cwd_path = parent or uv.cwd()
+
+        is_absolute = path.posix.isAbsolute(cwd_path)
 
         local cwd = path.posix.split(cwd_path)
 
@@ -173,7 +177,12 @@ function path.posix.resolve(pathname, parent)
 
     local coalesced = table.concat(parts, '/')
 
-    return '/' .. coalesced
+    if is_absolute then
+        return '/' .. coalesced
+
+    else
+        return coalesced
+    end
 end
 
 ---Strip the last component from a path.

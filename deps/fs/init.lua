@@ -3,7 +3,8 @@ local uv = require 'uv'
 ---@class std.fs
 local fs = {}
 
-fs.path = require('std.fs.path')
+---@type std.fs.path
+fs.path = import('path.lua')
 
 ---@alias fd_t integer
 ---@alias path_t string

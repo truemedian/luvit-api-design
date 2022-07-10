@@ -10,8 +10,8 @@ local codec = {}
 ---@alias std.codec.decoder fun(data: string, offset: integer): any, integer
 ---@alias std.codec.encoder fun(data: any): string
 
-codec.http = require('std.codec.http')
-codec.websocket = require('std.codec.websocket')
+codec.http = import('http.lua')
+codec.websocket = import('websocket.lua')
 
 ---@param read std.codec.reader
 ---@param decode std.codec.decoder

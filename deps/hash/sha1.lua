@@ -1,5 +1,5 @@
 ---@class std.hash.Sha1
-local Sha1 = require('std.class').create('std.hash.Sha1')
+local Sha1 = import('class').create('std.hash.Sha1')
 
 ---@return std.hash.Sha1
 function Sha1:init() end

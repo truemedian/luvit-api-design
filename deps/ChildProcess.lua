@@ -1,10 +1,10 @@
-local Emitter = require('std.Emitter')
+local Emitter = import('Emitter')
 
 ---@class std.ChildProcess : std.Emitter
 ---@field handle uv_process_t
 ---@field exit_code integer|nil
 ---@field exit_signal integer|nil
-local ChildProcess = require('std.class').create('std.ChildProcess', Emitter)
+local ChildProcess = import('class').create('std.ChildProcess', Emitter)
 
 ---@alias uv_process_t userdata
 

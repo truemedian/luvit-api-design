@@ -43,7 +43,7 @@ local function bootstrap_import(name, content)
         error('bootstrap failure: syn: ' .. err)
     end
 
-    local success, result = pcall(coroutine.wrap(fn))
+    local success, result = pcall(fn)
 
     if not success then
         error('bootstrap failure: run: ' .. result)
@@ -58,6 +58,7 @@ bootstrap_import('path.lua', content_fs_path)
 bootstrap_import('fs/init.lua', content_fs)
 local import = bootstrap_import('import.lua', content_import)
 
-coroutine.wrap(function ()
+-- fs requires being wrapped in a coroutine
+coroutine.wrap(function()
     import.new('init.lua', false)
 end)()

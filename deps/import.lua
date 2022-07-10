@@ -61,6 +61,10 @@ local function resolvePackage(module, name)
         end
     end
 
+    if not has_luvi then
+        return 'file not found', nil, nil, nil
+    end
+
     -- always attempt to load packages from the bundle, but don't allow imports to escape the bundle once they enter.
 
     -- bundled deps should always be at the top
@@ -94,6 +98,8 @@ local function resolveRelative(module, name)
     end
 
     if module.bundled then
+        assert(has_luvi)
+
         local full_path = path.posix.resolve(name, module.dir)
 
         local relative_to_root = path.posix.relative(module.root, full_path)

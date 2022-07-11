@@ -18,30 +18,30 @@ Require is being reworked for Luvit 3.0 and renamed `import` to avoid clobbering
 #### Short Description of `module` fields.
 
 - `is_bundled`: Whether or not this file is inside a luvi bundle.
-    - If `true`, it cannot import files on the filesystem, and will only look inside the bundle.
-    - If `false`, then it will first attempt to load packages from the filesystem and, if available, luvi.
+  - If `true`, it cannot import files on the filesystem, and will only look inside the bundle.
+- If `false`, then it will first attempt to load packages from the filesystem and, if available, luvi.
 - `file`: The full path for the file this module represents
 - `dir`: The full path to the directory that contains this module (should always be `path.dirname(module.file)`)
 - `root`: The "root" directory of this package, relative imports cannot be outside of this directory.
-    - This will be equal to `project` if the module represents a file in the application.
+  - This will be equal to `project` if the module represents a file in the application.
 - `project`: The "root" directory of this entire application, this is where `deps` will be.
 
 #### Implementation
 
 - Must be bootstrapped so that it can access `fs` and `fs.path`.
 - Does not require luvi, it will error if you attempt to tell it to use a bundled file.
-    - When luvi is not present, `module.is_bundled` should never be true.
+  - When luvi is not present, `module.is_bundled` should never be true.
 - Import will attempt to load packages before relative files.
 - Packages will be imported as follows (implemented in `resolvePackage`):
-    - `{project}/deps/{name}.lua`
-    - `{project}/deps/{name}/init.lua`
+  - `{project}/deps/{name}.lua`
+  - `{project}/deps/{name}/init.lua`
 - Relative files will be imported as (implemented in `resolveRelative`):
-    - `{dir}/{name}`
+  - `{dir}/{name}`
 - Relative files are not allowed to be imported outside of `root`
 - Single file packages, like `timer`, will have no `root`, and are therefore not allowed to do *any* relative imports.
 - There is no way to force `import` to use the bundle or filesystem
-    - Files in the bundle will only look in the bundle
-    - Files on the filesystem will look on the filesystem before using the bundle, if available.
+  - Files in the bundle will only look in the bundle
+  - Files on the filesystem will look on the filesystem before using the bundle, if available.
 - Does not attempt to read a file until after it has found the file it will use (it uses `stat` to find a file).
 
 ## Reimplementations or Reworkings

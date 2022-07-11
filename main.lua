@@ -35,6 +35,7 @@ local function bootstrap_import(name, content)
     end
 
     local env = setmetatable({
+        module = { fake = true },
         import = bootstrap_import,
     }, { __index = _G })
 
@@ -62,3 +63,5 @@ local import = bootstrap_import('import.lua', content_import)
 coroutine.wrap(function()
     import.new('init.lua', false)
 end)()
+
+require 'uv'.run()

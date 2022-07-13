@@ -1,9 +1,9 @@
 local uv = require 'uv'
 
 ---@class std.pretty
----@field stdin uv_stream_t
----@field stdout uv_stream_t
----@field stderr uv_stream_t
+---@field stdin uv_stream_t|nil
+---@field stdout uv_stream_t|nil
+---@field stderr uv_stream_t|nil
 ---@field width integer
 ---@field use_colors boolean
 local pretty = {}
@@ -98,11 +98,14 @@ local default_theme = {
 pretty.current_theme = default_theme
 
 pretty.indent_string = '    '
+pretty.default_max_depth = 8
 
 --- Functions that print something
 
----@vararg string
+---@vararg any
 function pretty.prettyPrint(...)
+    if pretty.stdout == nil then return end
+
     local n = select('#', ...)
 
     for i = 1, n - 1 do
@@ -112,13 +115,18 @@ function pretty.prettyPrint(...)
         uv.write(pretty.stdout, '\t')
     end
 
-    local str = pretty.dump(select(n, ...))
-    uv.write(pretty.stdout, str)
+    if n > 0 then
+        local str = pretty.dump(select(n, ...), pretty.default_max_depth, not pretty.use_colors)
+        uv.write(pretty.stdout, str)
+    end
+
     uv.write(pretty.stdout, '\n')
 end
 
 ---@vararg string
 function pretty.print(...)
+    if pretty.stdout == nil then return end
+
     local n = select('#', ...)
 
     for i = 1, n - 1 do
@@ -128,8 +136,11 @@ function pretty.print(...)
         uv.write(pretty.stdout, '\t')
     end
 
-    local str = tostring(select(n, ...))
-    uv.write(pretty.stdout, str)
+    if n > 0 then
+        local str = tostring(select(n, ...))
+        uv.write(pretty.stdout, str)
+    end
+
     uv.write(pretty.stdout, '\n')
 end
 

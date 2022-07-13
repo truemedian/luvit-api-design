@@ -46,9 +46,7 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.access(path, flags)
-    uv.fs_access(path, flags, wait())
-
-    return coroutine.yield()
+    return uv.fs_access(path, flags)
 end
 
 ---Equivalent to `chmod(2)` on Unix. See luv documentation for more information.
@@ -63,9 +61,7 @@ function fs.chmod(path, mode)
         mode = tonumber(mode, 8)
     end
 
-    uv.fs_chmod(path, mode, wait())
-
-    return coroutine.yield()
+    return uv.fs_chmod(path, mode)
 end
 
 ---Equivalent to `chown(2)` on Unix. See luv documentation for more information.
@@ -75,12 +71,11 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.chown(path, uid, gid)
-    uv.fs_chown(path, uid, gid, wait())
-
-    return coroutine.yield()
+    return uv.fs_chown(path, uid, gid)
 end
 
 ---Copies a file from `path` to `new_path`. See luv documentation for more information.
+---@async
 ---@param path path_t
 ---@param new_path path_t
 ---@param mode? { excl: boolean, ficlone: boolean, ficlone_force: boolean }
@@ -98,9 +93,7 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.link(path, new_path)
-    uv.fs_link(path, new_path, wait())
-
-    return coroutine.yield()
+    return uv.fs_link(path, new_path)
 end
 
 ---Equivalent to `lstat(2)` on Unix. See luv documentation for more information.
@@ -108,9 +101,7 @@ end
 ---@return std.fs.stat_info
 ---@error nil, string, string
 function fs.lstat(path)
-    uv.fs_lstat(path, wait())
-
-    return coroutine.yield()
+    return uv.fs_lstat(path)
 end
 
 ---Equivalent to `mkdir(2)` on Unix. See luv documentation for more information.
@@ -119,9 +110,7 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.mkdir(path, mode)
-    uv.fs_mkdir(path, mode, wait())
-
-    return coroutine.yield()
+    return uv.fs_mkdir(path, mode)
 end
 
 ---Equivalent to `mkdtemp(3)` on Unix. See luv documentation for more information.
@@ -130,9 +119,7 @@ end
 ---@error nil, string, string
 
 function fs.mkdtemp(template)
-    uv.fs_mkdtemp(template, wait())
-
-    return coroutine.yield()
+    return uv.fs_mkdtemp(template)
 end
 
 ---@param path path_t
@@ -153,9 +140,7 @@ end
 ---@return path_t
 ---@error nil, string, string
 function fs.readlink(path)
-    uv.fs_readlink(path, wait())
-
-    return coroutine.yield()
+    return uv.fs_readlink(path)
 end
 
 ---Equivalent to `realpath(3)` on Unix. See luv documentation for more information.
@@ -163,9 +148,7 @@ end
 ---@return path_t
 ---@error nil, string, string
 function fs.realpath(path)
-    uv.fs_realpath(path, wait())
-
-    return coroutine.yield()
+    return uv.fs_realpath(path)
 end
 
 ---Equivalent to `rename(2)` on Unix. See luv documentation for more information.
@@ -174,9 +157,7 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.rename(path, new_path)
-    uv.fs_rename(path, new_path, wait())
-
-    return coroutine.yield()
+    return uv.fs_rename(path, new_path)
 end
 
 ---Equivalent to `rmdir(2)` on Unix. See luv documentation for more information.
@@ -184,9 +165,7 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.rmdir(path)
-    uv.fs_rmdir(path, wait())
-
-    return coroutine.yield()
+    return uv.fs_rmdir(path)
 end
 
 -- note: abstract over fs_scandir + fs_scandir_next
@@ -194,9 +173,7 @@ end
 ---@return fun(): string, string
 ---@error nil, string, string
 function fs.scandir(path)
-    uv.fs_scandir(path, wait())
-
-    local req, err, errno = coroutine.yield()
+    local req, err, errno = uv.fs_scandir(path)
     if not req then
         ---@diagnostic disable-next-line: redundant-return-value, return-type-mismatch
         return nil, err, errno
@@ -217,9 +194,7 @@ end
 ---@return std.fs.stat_info
 ---@error nil, string, string
 function fs.stat(path)
-    uv.fs_stat(path, wait())
-
-    return coroutine.yield()
+    return uv.fs_stat(path)
 end
 
 ---Equivalent to `symlink(2)` on Unix. See luv documentation for more information.
@@ -229,9 +204,7 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.symlink(path, new_path, flags)
-    uv.fs_symlink(path, new_path, flags, wait())
-
-    return coroutine.yield()
+    return uv.fs_symlink(path, new_path, flags)
 end
 
 ---Equivalent to `unlink(2)` on Unix. See luv documentation for more information.
@@ -239,9 +212,7 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.unlink(path)
-    uv.fs_unlink(path, wait())
-
-    return coroutine.yield()
+    return uv.fs_unlink(path)
 end
 
 ---Equivalent to `utime(2)` on Unix. See luv documentation for more information.
@@ -251,9 +222,7 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.utime(path, atime, mtime)
-    uv.fs_utime(path, atime, mtime, wait())
-
-    return coroutine.yield()
+    return uv.fs_utime(path, atime, mtime)
 end
 
 --- Functions that operate on file descriptors
@@ -272,9 +241,7 @@ function fs.open(path, flags, mode)
         mode = tonumber(mode, 8)
     end
 
-    uv.fs_open(path, flags, mode, wait())
-
-    return coroutine.yield()
+    return uv.fs_open(path, flags, mode)
 end
 
 ---Equivalent to `close(2)` on Unix. See luv documentation for more information.
@@ -282,9 +249,7 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.close(fd)
-    uv.fs_close(fd, wait())
-
-    return coroutine.yield()
+    return uv.fs_close(fd)
 end
 
 ---Equivalent to `fchmod(2)` on Unix. See luv documentation for more information.
@@ -299,9 +264,7 @@ function fs.fchmod(fd, mode)
         mode = tonumber(mode, 8)
     end
 
-    uv.fs_fchmod(fd, mode, wait())
-
-    return coroutine.yield()
+    return uv.fs_fchmod(fd, mode)
 end
 
 ---Equivalent to `fchown(2)` on Unix. See luv documentation for more information.
@@ -311,12 +274,11 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.fchown(fd, uid, gid)
-    uv.fs_fchown(fd, uid, gid, wait())
-
-    return coroutine.yield()
+    return uv.fs_fchown(fd, uid, gid)
 end
 
 ---Equivalent to `fdatasync(2)` on Unix. See luv documentation for more information.
+---@async
 ---@param fd fd_t
 ---@return boolean
 ---@error nil, string, string
@@ -331,12 +293,11 @@ end
 ---@return std.fs.stat_info
 ---@error nil, string, string
 function fs.fstat(fd)
-    uv.fs_fstat(fd, wait())
-
-    return coroutine.yield()
+    return uv.fs_fstat(fd)
 end
 
 ---Equivalent to `fsync(2)` on Unix. See luv documentation for more information.
+---@async
 ---@param fd fd_t
 ---@return boolean
 ---@error nil, string, string
@@ -347,6 +308,7 @@ function fs.fsync(fd)
 end
 
 ---Equivalent to `ftruncate(2)` on Unix. See luv documentation for more information.
+---@async
 ---@param fd fd_t
 ---@param offset integer
 ---@return boolean
@@ -364,14 +326,13 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.futime(fd, atime, mtime)
-    uv.fs_futime(fd, atime, mtime, wait())
-
-    return coroutine.yield()
+    return uv.fs_futime(fd, atime, mtime)
 end
 
 ---Equivalent to `preadv(2)` on Unix. See luv documentation for more information.
 ---
 ---Size defaults to 4096.
+---@async
 ---@param fd fd_t
 ---@param size? integer
 ---@param offset? integer
@@ -390,6 +351,7 @@ end
 ---Equivalent to `sendfile(2)` on Unix. See luv documentation for more information.
 ---
 ---Note: may do a partial write
+---@async
 ---@param out_fd fd_t
 ---@param in_fd fd_t
 ---@param in_offset integer
@@ -405,6 +367,7 @@ end
 ---Equivalent to `pwritev(2)` on Unix. See luv documentation for more information.
 ---
 ---Note: may do a partial write
+---@async
 ---@param fd fd_t
 ---@param data string
 ---@param offset? integer
@@ -428,6 +391,7 @@ function fs.exists(path)
 end
 
 ---Reads an entire file and returns its contents.
+---@async
 ---@param path path_t
 ---@param size? integer
 ---@param offset? integer
@@ -490,6 +454,7 @@ end
 ---Writes `data` to `path`.
 ---
 ---If offset is provided, the file is not truncated and the data is written at the offset.
+---@async
 ---@param path path_t
 ---@param data string
 ---@param offset? integer

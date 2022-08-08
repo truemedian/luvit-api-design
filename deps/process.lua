@@ -3,6 +3,8 @@ local uv = require 'uv'
 ---@class std.process
 local process = {}
 
+local original_env = uv.os_environ()
+
 local env_meta = {}
 function env_meta:__index(key)
     return os.getenv(key)
@@ -10,9 +12,29 @@ end
 
 function env_meta:__newindex(key, value)
     if value then
-        uv.os_setenv(key, value)
+        local success, err = uv.os_setenv(key, value)
+        if success then
+            original_env[key] = value
+        else
+            error(err)
+        end
     else
-        uv.os_unsetenv(key)
+        local success, err = uv.os_unsetenv(key)
+        if success then
+            original_env[key] = nil
+        else
+            error(err)
+        end
+    end
+end
+
+function env_meta:__pairs()
+    local last
+    return function()
+        local k, v = next(original_env, last)
+        last = k
+
+        return k, v
     end
 end
 
@@ -20,6 +42,21 @@ process.env = setmetatable({}, env_meta)
 
 process.pid = uv.os_getpid()
 process.ppid = uv.os_getppid()
+
+local uname = uv.os_uname()
+process.os = {
+    release = uname.release,
+    arch = uname.machine,
+    name = uname.sysname,
+}
+
+if uname.sysname == 'Windows_NT' or uname.sysname:sub(1, 10) == 'MINGW32_NT' then
+    process.os.name = "Windows"
+
+    if uname.machine == 'ia64' then
+        process.os.arch = 'x86_64'
+    end
+end
 
 ---@return path_t
 function process.getCwd()

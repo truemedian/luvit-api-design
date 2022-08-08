@@ -64,7 +64,8 @@ function process.getCwd()
 end
 
 ---@param new_cwd path_t
----@return boolean, string?, string?
+---@return boolean
+---@error false, string, string
 function process.setCwd(new_cwd)
     local ret, err, errno = uv.chdir(new_cwd)
     return ret == 0, err, errno
@@ -77,8 +78,11 @@ end
 
 ---@param pid integer
 ---@param signal string
+---@return boolean
+---@error false, string, string
 function process.kill(pid, signal)
-    return uv.kill(pid, signal)
+    local ret, err, errno = uv.kill(pid, signal)
+    return ret == 0, err, errno
 end
 
 ---@param code integer
@@ -88,7 +92,7 @@ function process.exit(code)
     os.exit(code)
 end
 
----@return { total: number, free: number, contstrained: number, rss: number, heap: number }
+---@return { total: integer, free: integer, constrained: integer, rss: integer, heap: number }
 function process.memoryUsage()
     return {
         total = uv.get_total_memory(),
@@ -99,7 +103,7 @@ function process.memoryUsage()
     }
 end
 
----@return { user: number, system: number }
+---@return { user_time: number, system_time: number, max_resident_memory: integer, minor_page_fault: integer, major_page_fault: integer, file_input: integer, file_output: integer, voluntary_context_switch: integer, involuntary_context_switch: integer }
 function process.cpuUsage()
     local usage = uv.getrusage()
 

@@ -1,14 +1,93 @@
+local uv = require 'uv'
+
+local bootstrap_import = ...
+
+if bootstrap_import == 'import' then
+    bootstrap_import = nil
+end
+
 ---@type std.fs
-local fs = import('fs/init.lua')
+local fs
+
+if import then
+    fs = import('fs').sync
+else
+    fs = { path = { posix = {} } }
+
+    function fs.path.resolve(pathname, parent)
+        if parent and parent ~= '' then
+            return parent .. '/' .. pathname
+        end
+
+        return pathname
+    end
+
+    fs.path.posix.resolve = fs.path.resolve
+
+    function fs.path.dirname(pathname)
+        return string.match(pathname, '^(.+)/[^/]+/*$') or ''
+    end
+
+    function fs.path.basename(pathname, expected_ext)
+        assert(expected_ext == nil)
+        return string.match(pathname, '([^/]+)/*$')
+    end
+
+    function fs.path.extension(pathname)
+        local basename = fs.path.basename(pathname)
+        return string.match(basename, '[^%.](%.[^%.]*)$') or ""
+    end
+
+    fs.path.posix.extension = fs.path.extension
+
+    function fs.path.relative(from, to)
+        return from
+    end
+
+    fs.path.posix.relative = fs.path.relative
+
+    function fs.path.join(...)
+        return table.concat({...}, '/')
+    end
+
+    fs.path.posix.join = fs.path.join
+
+    function fs.stat(path)
+        return uv.fs_stat(path)
+    end
+
+    function fs.readFile(path)
+        local fd = io.open(path, 'r')
+        if fd == nil then
+            return nil, 'file not found: ' .. path
+        end
+
+        local data = fd:read('*a')
+        fd:close()
+
+        return data
+    end
+end
+
 local path = fs.path
 
 local has_luvi, luvi = pcall(require, 'luvi')
 
-local import = {}
+local import = bootstrap_import or {}
 import.stat_cache = {}
 import.module_cache = {}
+import.loaders = {}
 
-local function statFile(key, full_path, bundled)
+function import.loaders.lua(name, file, content, env, ...)
+    local fn, syntax_err = load(content, '@' .. file, "t", env)
+    if not fn then
+        error(string.format("error loading module %q from file %q:\n\t%s", name, file, syntax_err), 3)
+    end
+
+    return fn(...)
+end
+
+local function statFile(key, full_path, bundled, attempts)
     if import.stat_cache[key] ~= nil then
         return true
     end
@@ -16,6 +95,8 @@ local function statFile(key, full_path, bundled)
     if bundled then
         local stat = luvi.bundle.stat(full_path)
         if not stat then
+            attempts[#attempts + 1] = string.format("no file %q", key)
+
             return false
         end
 
@@ -23,6 +104,8 @@ local function statFile(key, full_path, bundled)
     else
         local stat = fs.stat(full_path)
         if not stat then
+            attempts[#attempts + 1] = string.format("no file %q", key)
+
             return false
         end
 
@@ -32,37 +115,68 @@ local function statFile(key, full_path, bundled)
     return true
 end
 
+---Note: A `nil` error with a missing key and path indicates file not found
 ---@return nil|string err
 ---@return string|nil cache_key
 ---@return string|nil full_path
 ---@return boolean|nil has_root
-local function resolvePackage(module, name)
+local function resolvePackage(module, name, attempts)
     local normalized_name = path.resolve(name, '')
 
     if not module.bundled then
+        if path.extension(name) ~= '' then
+            return nil, nil, nil
+        end
+
         local full_path = path.join(module.project, 'deps', normalized_name)
 
         local key = 'fs:' .. full_path
 
-        local key_suffix = key .. '.lua'
-        local full_path_suffix = full_path .. '.lua'
+        local key_single = key .. '.lua'
+        local full_path_single = full_path .. '.lua'
 
-        if statFile(key_suffix, full_path_suffix, false) then
-            return nil, key_suffix, full_path_suffix, false
-        else
-            local key_init = path.join(key, 'init.lua')
-            local full_path_init = path.join(full_path, 'init.lua')
+        if statFile(key_single, full_path_single, false, attempts) then
+            return nil, key_single, full_path_single, false
+        end
 
-            if statFile(key_init, full_path_init, false) then
-                return nil, key_init, full_path_init, true
-            else
-                return 'file not found', nil, nil, nil
+        local key_multi = path.join(key, 'init.lua')
+        local full_path_multi = path.join(full_path, 'init.lua')
+
+        if statFile(key_multi, full_path_multi, false, attempts) then
+            return nil, key_multi, full_path_multi, true
+        end
+
+        if import.global_package_cache == nil then
+            import.global_package_cache = os.getenv("LUVI_CACHE_DIR") or false
+        end
+
+        if import.global_package_cache then
+            local global_full_path = path.join(import.global_package_cache, normalized_name)
+
+            local global_key = 'fs:' .. global_full_path
+
+            local global_key_single = global_key .. '.lua'
+            local global_full_path_single = global_full_path .. '.lua'
+
+            if statFile(global_key_single, global_full_path_single, false, attempts) then
+                return nil, global_key_single, global_full_path_single, false
+            end
+
+            local global_key_multi = path.join(global_key, 'init.lua')
+            local global_full_path_multi = path.join(global_full_path, 'init.lua')
+
+            if statFile(global_key_multi, global_full_path_multi, false, attempts) then
+                return nil, global_key_multi, global_full_path_multi, true
             end
         end
     end
 
     if not has_luvi then
-        return 'file not found', nil, nil, nil
+        return nil, nil, nil, nil
+    end
+
+    if path.posix.extension(name) ~= '' then
+        return nil, nil, nil
     end
 
     -- always attempt to load packages from the bundle, but don't allow imports to escape the bundle once they enter.
@@ -72,33 +186,38 @@ local function resolvePackage(module, name)
 
     local key = 'bundle:' .. full_path
 
-    local key_suffix = key .. '.lua'
-    local full_path_suffix = full_path .. '.lua'
+    local key_single = key .. '.lua'
+    local full_path_single = full_path .. '.lua'
 
-    if statFile(key_suffix, full_path_suffix, true) then
-        return nil, key_suffix, full_path_suffix, false
-    else
-        local key_init = path.join(key, 'init.lua')
-        local full_path_init = path.join(full_path, 'init.lua')
-
-        if statFile(key_init, full_path_init, true) then
-            return nil, key_init, full_path_init, true
-        else
-            return 'file not found', nil, nil
-        end
+    if statFile(key_single, full_path_single, true, attempts) then
+        return nil, key_single, full_path_single, false
     end
+
+    local key_multi = path.join(key, 'init.lua')
+    local full_path_multi = path.join(full_path, 'init.lua')
+
+    if statFile(key_multi, full_path_multi, true, attempts) then
+        return nil, key_multi, full_path_multi, true
+    end
+
+    return nil, nil, nil
 end
 
+---Note: A `nil` error with a missing key and path indicates file not found
 ---@return nil|string err
 ---@return string|nil cache_key
 ---@return string|nil full_path
-local function resolveRelative(module, name)
+local function resolveRelative(module, name, attempts)
     if module.root == nil then
-        return 'single file modules cannot import relative modules', nil, nil
+        return 'single file packages cannot import relative modules', nil, nil
     end
 
     if module.bundled then
         assert(has_luvi)
+
+        if path.posix.extension(name) == '' then
+            return nil, nil, nil
+        end
 
         local full_path = path.posix.resolve(name, module.dir)
 
@@ -110,28 +229,32 @@ local function resolveRelative(module, name)
 
         local key = 'bundle:' .. full_path
 
-        if statFile(key, full_path, true) then
+        if statFile(key, full_path, true, attempts) then
             return nil, key, full_path
-        else
-            return 'file not found', nil, nil
-        end
-    else
-        local full_path = path.resolve(name, module.dir)
-
-        local relative_to_root = path.relative(module.root, full_path)
-
-        if relative_to_root:sub(1, 2) == '..' then
-            return 'import of file outside outside of package path', nil, nil
         end
 
-        local key = 'fs:' .. full_path
-
-        if statFile(key, full_path, false) then
-            return nil, key, full_path
-        else
-            return 'file not found', nil, nil
-        end
+        return nil, nil, nil
     end
+
+    if path.extension(name) == '' then
+        return nil, nil, nil
+    end
+
+    local full_path = path.resolve(name, module.dir)
+
+    local relative_to_root = path.relative(module.root, full_path)
+
+    if relative_to_root:sub(1, 2) == '..' then
+        return 'import of file outside outside of package path', nil, nil
+    end
+
+    local key = 'fs:' .. full_path
+
+    if statFile(key, full_path, false, attempts) then
+        return nil, key, full_path
+    end
+
+    return nil, nil, nil
 end
 
 local Module = {}
@@ -143,31 +266,48 @@ local env_meta = { __index = _G }
 ---@return nil|string err
 ---@return boolean is_package
 ---@return boolean|nil package_has_root
+---@return table attempts
 function Module:resolve(name)
     local key, full_path, err, package_has_root
 
     local is_package = true
 
-    err, key, full_path, package_has_root = resolvePackage(self, name)
+    local attempts = {}
+
+    err, key, full_path, package_has_root = resolvePackage(self, name, attempts)
 
     if not key then
         is_package = false
 
-        err, key, full_path = resolveRelative(self, name)
+        err, key, full_path = resolveRelative(self, name, attempts)
     end
 
-    return key, full_path, err, is_package, package_has_root
+    return key, full_path, err, is_package, package_has_root, attempts
 end
 
 function Module:import(name, ...)
-    local key, full_path, err, is_package, package_has_root = self:resolve(name)
+    local key, full_path, err, is_package, package_has_root, attempts = self:resolve(name)
 
     if not key then
-        error(string.format('module %q not found: %s', name, err))
+        local attempt_str = table.concat(attempts, '\n\t')
+
+        if err then -- something else went wrong
+            error(string.format('module %q not found: %s\n\t%s', name, err, attempt_str))
+        else -- the file was not found
+            error(string.format('module %q not found:\n\t%s', name, attempt_str))
+        end
     end
 
     if import.module_cache[key] ~= nil then
         return import.module_cache[key].exports
+    end
+
+    local full_path_extension = path.extension(full_path)
+    local loader = import.loaders[full_path_extension:sub(2)]
+
+    if not loader then
+        error(string.format("error loading module %q from file %q: no import loader for %q files", name, key,
+            full_path_extension), 2)
     end
 
     local is_bundled = key:sub(1, 7) == 'bundle:'
@@ -213,12 +353,7 @@ function Module:import(name, ...)
         end
     }, env_meta)
 
-    local fn, syntax_err = load(content, key, "t", env)
-    if not fn then
-        error(string.format("error loading module %q from file %q:\n\t%s", name, key, syntax_err), 2)
-    end
-
-    local ret = fn(...)
+    local ret = loader(name, key, content, env, ...)
 
     import.module_cache[key] = new_module
 
@@ -239,7 +374,6 @@ function import.new(entrypoint, is_bundled)
     end
 
     local dirname = path.dirname(entrypoint)
-    local basename = path.basename(entrypoint)
 
     local new_module = setmetatable({
         bundled = is_bundled,
@@ -249,7 +383,11 @@ function import.new(entrypoint, is_bundled)
         project = dirname,
     }, Module_meta)
 
-    return new_module:import(basename)
+    return new_module
+end
+
+if not bootstrap_import then
+    return import.new("fake.lua", has_luvi):import("import", import)
 end
 
 return import

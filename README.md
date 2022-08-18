@@ -43,6 +43,10 @@ Require is being reworked for Luvit 3.0 and renamed `import` to avoid clobbering
   - Files in the bundle will only look in the bundle
   - Files on the filesystem will look on the filesystem before using the bundle, if available.
 - Does not attempt to read a file until after it has found the file it will use (it uses `stat` to find a file).
+- Packages must be imported without a file extension
+- Relative modules must be imported with a file extension
+- import.loaders.ext will be called when importing a file of any kind
+  - See import.loaders.lua for an example and arguments
 
 ## Reimplementations or Reworkings
 

@@ -1,10 +1,15 @@
 local uv = require 'uv'
 
+
 ---@class std.fs
 local fs = {}
 
+---@type std.fs
+fs.sync = {}
+
 ---@type std.fs.path
 fs.path = import('path.lua')
+fs.sync.path = fs.path
 
 ---@alias fd_t integer
 ---@alias path_t string
@@ -49,6 +54,8 @@ function fs.access(path, flags)
     return uv.fs_access(path, flags)
 end
 
+fs.sync.access = fs.access
+
 ---Equivalent to `chmod(2)` on Unix. See luv documentation for more information.
 ---
 ---If `mode` is a string, it is interpreted as octal digits.
@@ -64,6 +71,8 @@ function fs.chmod(path, mode)
     return uv.fs_chmod(path, mode)
 end
 
+fs.sync.chmod = fs.chmod
+
 ---Equivalent to `chown(2)` on Unix. See luv documentation for more information.
 ---@param path path_t
 ---@param uid integer
@@ -73,6 +82,8 @@ end
 function fs.chown(path, uid, gid)
     return uv.fs_chown(path, uid, gid)
 end
+
+fs.sync.chown = fs.chown
 
 ---Copies a file from `path` to `new_path`. See luv documentation for more information.
 ---@async
@@ -87,6 +98,16 @@ function fs.copyfile(path, new_path, mode)
     return coroutine.yield()
 end
 
+---Copies a file from `path` to `new_path`. See luv documentation for more information.
+---@param path path_t
+---@param new_path path_t
+---@param mode? { excl: boolean, ficlone: boolean, ficlone_force: boolean }
+---@return boolean
+---@error nil, string, string
+function fs.sync.copyfile(path, new_path, mode)
+    return uv.fs_copyfile(path, new_path, mode)
+end
+
 ---Equivalent to `link(2)` on Unix. See luv documentation for more information.
 ---@param path path_t
 ---@param new_path path_t
@@ -96,6 +117,8 @@ function fs.link(path, new_path)
     return uv.fs_link(path, new_path)
 end
 
+fs.sync.link = fs.link
+
 ---Equivalent to `lstat(2)` on Unix. See luv documentation for more information.
 ---@param path path_t
 ---@return std.fs.stat_info
@@ -103,6 +126,8 @@ end
 function fs.lstat(path)
     return uv.fs_lstat(path)
 end
+
+fs.sync.lstat = fs.lstat
 
 ---Equivalent to `mkdir(2)` on Unix. See luv documentation for more information.
 ---@param path path_t
@@ -113,6 +138,8 @@ function fs.mkdir(path, mode)
     return uv.fs_mkdir(path, mode)
 end
 
+fs.sync.mkdir = fs.mkdir
+
 ---Equivalent to `mkdtemp(3)` on Unix. See luv documentation for more information.
 ---@param template string
 ---@return path_t
@@ -121,6 +148,8 @@ end
 function fs.mkdtemp(template)
     return uv.fs_mkdtemp(template)
 end
+
+fs.sync.mkdtemp = fs.mkdtemp
 
 ---@param path path_t
 ---@return {name: path_t, type: string}[]
@@ -135,6 +164,8 @@ function fs.readdir(path)
     return res
 end
 
+fs.sync.readdir = fs.readdir
+
 ---Equivalent to `readlink(2)` on Unix. See luv documentation for more information.
 ---@param path path_t
 ---@return path_t
@@ -143,6 +174,8 @@ function fs.readlink(path)
     return uv.fs_readlink(path)
 end
 
+fs.sync.readlink = fs.readlink
+
 ---Equivalent to `realpath(3)` on Unix. See luv documentation for more information.
 ---@param path path_t
 ---@return path_t
@@ -150,6 +183,8 @@ end
 function fs.realpath(path)
     return uv.fs_realpath(path)
 end
+
+fs.sync.realpath = fs.realpath
 
 ---Equivalent to `rename(2)` on Unix. See luv documentation for more information.
 ---@param path path_t
@@ -160,6 +195,8 @@ function fs.rename(path, new_path)
     return uv.fs_rename(path, new_path)
 end
 
+fs.sync.rename = fs.rename
+
 ---Equivalent to `rmdir(2)` on Unix. See luv documentation for more information.
 ---@param path path_t
 ---@return boolean
@@ -167,6 +204,8 @@ end
 function fs.rmdir(path)
     return uv.fs_rmdir(path)
 end
+
+fs.sync.rmdir = fs.rmdir
 
 -- note: abstract over fs_scandir + fs_scandir_next
 ---@param path path_t
@@ -189,6 +228,8 @@ function fs.scandir(path)
     end
 end
 
+fs.sync.scandir = fs.scandir
+
 ---Equivalent to `stat(2)` on Unix. See luv documentation for more information.
 ---@param path path_t
 ---@return std.fs.stat_info
@@ -196,6 +237,8 @@ end
 function fs.stat(path)
     return uv.fs_stat(path)
 end
+
+fs.sync.stat = fs.stat
 
 ---Equivalent to `symlink(2)` on Unix. See luv documentation for more information.
 ---@param path path_t
@@ -207,6 +250,8 @@ function fs.symlink(path, new_path, flags)
     return uv.fs_symlink(path, new_path, flags)
 end
 
+fs.sync.symlink = fs.symlink
+
 ---Equivalent to `unlink(2)` on Unix. See luv documentation for more information.
 ---@param path path_t
 ---@return boolean
@@ -214,6 +259,8 @@ end
 function fs.unlink(path)
     return uv.fs_unlink(path)
 end
+
+fs.sync.unlink = fs.unlink
 
 ---Equivalent to `utime(2)` on Unix. See luv documentation for more information.
 ---@param path path_t
@@ -224,6 +271,8 @@ end
 function fs.utime(path, atime, mtime)
     return uv.fs_utime(path, atime, mtime)
 end
+
+fs.sync.utime = fs.utime
 
 --- Functions that operate on file descriptors
 
@@ -244,6 +293,8 @@ function fs.open(path, flags, mode)
     return uv.fs_open(path, flags, mode)
 end
 
+fs.sync.open = fs.open
+
 ---Equivalent to `close(2)` on Unix. See luv documentation for more information.
 ---@param fd fd_t
 ---@return boolean
@@ -251,6 +302,8 @@ end
 function fs.close(fd)
     return uv.fs_close(fd)
 end
+
+fs.sync.close = fs.close
 
 ---Equivalent to `fchmod(2)` on Unix. See luv documentation for more information.
 ---
@@ -267,6 +320,8 @@ function fs.fchmod(fd, mode)
     return uv.fs_fchmod(fd, mode)
 end
 
+fs.sync.fchmod = fs.fchmod
+
 ---Equivalent to `fchown(2)` on Unix. See luv documentation for more information.
 ---@param fd fd_t
 ---@param uid integer
@@ -276,6 +331,8 @@ end
 function fs.fchown(fd, uid, gid)
     return uv.fs_fchown(fd, uid, gid)
 end
+
+fs.sync.fchown = fs.fchown
 
 ---Equivalent to `fdatasync(2)` on Unix. See luv documentation for more information.
 ---@async
@@ -288,6 +345,14 @@ function fs.fdatasync(fd)
     return coroutine.yield()
 end
 
+---Equivalent to `fdatasync(2)` on Unix. See luv documentation for more information.
+---@param fd fd_t
+---@return boolean
+---@error nil, string, string
+function fs.sync.fdatasync(fd)
+    return uv.fs_fdatasync(fd)
+end
+
 ---Equivalent to `fstat(2)` on Unix. See luv documentation for more information.
 ---@param fd fd_t
 ---@return std.fs.stat_info
@@ -295,6 +360,8 @@ end
 function fs.fstat(fd)
     return uv.fs_fstat(fd)
 end
+
+fs.sync.fstat = fs.fstat
 
 ---Equivalent to `fsync(2)` on Unix. See luv documentation for more information.
 ---@async
@@ -305,6 +372,14 @@ function fs.fsync(fd)
     uv.fs_fsync(fd, wait())
 
     return coroutine.yield()
+end
+
+---Equivalent to `fsync(2)` on Unix. See luv documentation for more information.
+---@param fd fd_t
+---@return boolean
+---@error nil, string, string
+function fs.sync.fsync(fd)
+    return uv.fs_fsync(fd)
 end
 
 ---Equivalent to `ftruncate(2)` on Unix. See luv documentation for more information.
@@ -319,6 +394,15 @@ function fs.ftruncate(fd, offset)
     return coroutine.yield()
 end
 
+---Equivalent to `ftruncate(2)` on Unix. See luv documentation for more information.
+---@param fd fd_t
+---@param offset integer
+---@return boolean
+---@error nil, string, string
+function fs.sync.ftruncate(fd, offset)
+    return uv.fs_ftruncate(fd, offset)
+end
+
 ---Equivalent to `futime(2)` on Unix. See luv documentation for more information.
 ---@param fd fd_t
 ---@param atime number
@@ -328,6 +412,8 @@ end
 function fs.futime(fd, atime, mtime)
     return uv.fs_futime(fd, atime, mtime)
 end
+
+fs.sync.futime = fs.futime
 
 ---Equivalent to `preadv(2)` on Unix. See luv documentation for more information.
 ---
@@ -348,6 +434,22 @@ function fs.read(fd, size, offset)
     return coroutine.yield()
 end
 
+---Equivalent to `preadv(2)` on Unix. See luv documentation for more information.
+---
+---Size defaults to 4096.
+---@param fd fd_t
+---@param size? integer
+---@param offset? integer
+---@return string
+---@error nil, string, string
+function fs.sync.read(fd, size, offset)
+    if size == nil then
+        size = 4096
+    end
+
+    return uv.fs_read(fd, size, offset)
+end
+
 ---Equivalent to `sendfile(2)` on Unix. See luv documentation for more information.
 ---
 ---Note: may do a partial write
@@ -362,6 +464,19 @@ function fs.sendfile(out_fd, in_fd, in_offset, length)
     uv.fs_sendfile(out_fd, in_fd, in_offset, length, wait())
 
     return coroutine.yield()
+end
+
+---Equivalent to `sendfile(2)` on Unix. See luv documentation for more information.
+---
+---Note: may do a partial write
+---@param out_fd fd_t
+---@param in_fd fd_t
+---@param in_offset integer
+---@param length integer
+---@return integer
+---@error nil, string, string
+function fs.sync.sendfile(out_fd, in_fd, in_offset, length)
+    return uv.fs_sendfile(out_fd, in_fd, in_offset, length)
 end
 
 ---Equivalent to `pwritev(2)` on Unix. See luv documentation for more information.
@@ -379,6 +494,18 @@ function fs.write(fd, data, offset)
     return coroutine.yield()
 end
 
+---Equivalent to `pwritev(2)` on Unix. See luv documentation for more information.
+---
+---Note: may do a partial write
+---@param fd fd_t
+---@param data string
+---@param offset? integer
+---@return integer
+---@error nil, string, string
+function fs.sync.write(fd, data, offset)
+    return uv.fs_write(fd, data, offset)
+end
+
 --- Functions to provide easier API
 
 ---Returns whether a file or directory exists at `path`. The user may not be able to access it.
@@ -389,6 +516,8 @@ function fs.exists(path)
 
     return stat ~= nil
 end
+
+fs.sync.exists = fs.exists
 
 ---Reads an entire file and returns its contents.
 ---@async
@@ -402,14 +531,12 @@ function fs.readFile(path, size, offset)
 
     fd, err, errno = fs.open(path, 'r', '444')
     if fd == nil then
-        ---@diagnostic disable-next-line: redundant-return-value, return-type-mismatch
         return nil, err, errno
     end
 
     if size == nil then
         stat, err, errno = fs.fstat(fd)
         if stat == nil then
-            ---@diagnostic disable-next-line: redundant-return-value, return-type-mismatch
             return nil, err, errno
         end
 
@@ -424,7 +551,6 @@ function fs.readFile(path, size, offset)
         chunk, err, errno = fs.read(fd, size, offset)
 
         if chunk == nil then
-            ---@diagnostic disable-next-line: redundant-return-value, return-type-mismatch
             return nil, err, errno
         end
     else
@@ -432,7 +558,62 @@ function fs.readFile(path, size, offset)
         while true do
             chunk, err, errno = fs.read(fd, 8192, pos)
             if chunk == nil then
-                ---@diagnostic disable-next-line: redundant-return-value, return-type-mismatch
+                return nil, err, errno
+            end
+
+            if #chunk == 0 then
+                break
+            end
+
+            pos = pos + #chunk
+            chunks[n] = chunk
+            n = n + 1
+        end
+
+        chunk = table.concat(chunks)
+    end
+
+    return chunk
+end
+
+---Reads an entire file and returns its contents.
+---@param path path_t
+---@param size? integer
+---@param offset? integer
+---@return string
+---@error nil, string, string
+function fs.sync.readFile(path, size, offset)
+    local fd, stat, chunk, err, errno
+
+    fd, err, errno = fs.sync.open(path, 'r', '444')
+    if fd == nil then
+        return nil, err, errno
+    end
+
+    if size == nil then
+        stat, err, errno = fs.sync.fstat(fd)
+        if stat == nil then
+            return nil, err, errno
+        end
+
+        size = stat.size
+    end
+
+    if offset == nil then
+        offset = 0
+    end
+
+    if size > 0 then
+        chunk, err, errno = fs.sync.read(fd, size, offset)
+
+        if chunk == nil then
+            return nil, err, errno
+        end
+    else
+        local chunks, n, pos = {}, 1, offset
+        while true do
+            chunk, err, errno = fs.sync.read(fd, 8192, pos)
+            if chunk == nil then
                 return nil, err, errno
             end
 
@@ -483,6 +664,45 @@ function fs.writeFile(path, data, offset)
     written, err, errno = fs.write(fd, data, offset)
     if written == nil then
         ---@diagnostic disable-next-line: redundant-return-value, return-type-mismatch
+        return nil, err, errno
+    end
+
+    fs.close(fd)
+
+    return written
+end
+
+
+---Writes `data` to `path`.
+---
+---If offset is provided, the file is not truncated and the data is written at the offset.
+---@async
+---@param path path_t
+---@param data string
+---@param offset? integer
+---@return integer
+---@error nil, string, string
+function fs.sync.writeFile(path, data, offset)
+    local fd, written, err, errno
+
+    local flag
+
+    if offset == nil then
+        offset = 0
+
+        flag = 'w'
+    else
+        ---@type integer
+        flag = uv.constants.O_WRONLY + uv.constants.O_CREAT
+    end
+
+    fd, err, errno = fs.sync.open(path, flag, '644')
+    if fd == nil then
+        return nil, err, errno
+    end
+
+    written, err, errno = fs.sync.write(fd, data, offset)
+    if written == nil then
         return nil, err, errno
     end
 

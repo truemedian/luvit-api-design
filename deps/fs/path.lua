@@ -53,7 +53,7 @@ function path.posix.getRoot(pathname)
 end
 
 ---Joins a list of paths together, does not duplicate path separators. Starts at the last absolute path if any are provided.
----@param ... path_t[]
+---@param ... path_t
 ---@return path_t
 function path.posix.join(...)
     local len = select('#', ...)
@@ -242,7 +242,7 @@ end
 ---@return string
 function path.posix.extension(pathname)
     local basename = path.posix.basename(pathname)
-    return string.match(basename, '[%.](%.[^%.]*)$') or ""
+    return string.match(basename, '[^%.](%.[^%.]*)$') or ""
 end
 
 ---Returns the relative path from `from` to `to`.

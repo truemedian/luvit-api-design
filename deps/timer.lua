@@ -34,10 +34,11 @@ end
 function timer.delay(delay, callback, ...)
     local timer_obj = uv.new_timer()
     local args = { ... }
+    local len = select('#', ...)
     uv.timer_start(timer_obj, delay, 0, function()
         uv.timer_stop(timer_obj)
         uv.close(timer_obj)
-        callback(unpack(args))
+        callback(unpack(args, 1, len))
     end)
     return timer_obj
 end
@@ -50,8 +51,9 @@ end
 function timer.periodically(delay, callback, ...)
     local timer_obj = uv.new_timer()
     local args = { ... }
+    local len = select('#', ...)
     uv.timer_start(timer_obj, delay, delay, function()
-        callback(unpack(args))
+        callback(unpack(args, 1, len))
     end)
     return timer_obj
 end

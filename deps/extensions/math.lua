@@ -4,7 +4,11 @@ local ext_math = {}
 -- This is a polyfill for 5.1, which does not support passing the base to math.log.
 if math.log(100, 10) ~= 2 then
     function math.log(n, base)
-        return math.log(n) / math.log(base)
+        if base then
+            return math.log(n) / math.log(base)
+        else
+            return math.log(n)
+        end
     end
 end
 

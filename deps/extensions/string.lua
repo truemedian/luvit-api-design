@@ -16,7 +16,15 @@ end
 ---@param plain? boolean
 ---@return boolean
 function ext_string.endswith(str, pattern, plain)
-    return select(2, string.find(str, pattern, 1, plain)) == #str
+    if plain then
+        return string.sub(str, -#pattern) == pattern
+    else
+        if pattern:sub(-1) == '$' then
+            pattern = pattern .. '$'
+        end
+
+        return not not string.find(str, pattern, 1)
+    end
 end
 
 local pattern_special = [[^$()%.[]*+-?]]
@@ -77,15 +85,15 @@ end
 ---@param max_char? number
 ---@return string
 function ext_string.random(final_len, min_char, max_char)
-	local ret = {}
-	min_char = min_char or 0
-	max_char = max_char or 255
+    local ret = {}
+    min_char = min_char or 0
+    max_char = max_char or 255
 
-	for _ = 1, final_len do
-		table.insert(ret, string.char(math.random(min_char, max_char)))
-	end
+    for _ = 1, final_len do
+        table.insert(ret, string.char(math.random(min_char, max_char)))
+    end
 
-	return table.concat(ret)
+    return table.concat(ret)
 end
 
 ---Returns the Levenshtein distance between the two strings. This is often referred as "edit distance".
@@ -94,36 +102,36 @@ end
 ---@param str2 string
 ---@return number
 function ext_string.levenshtein(str1, str2)
-	if str1 == str2 then
-		return 0
-	end
+    if str1 == str2 then
+        return 0
+    end
 
-	local len1 = #str1
-	local len2 = #str2
+    local len1 = #str1
+    local len2 = #str2
 
-	if len1 == 0 then
-		return len2
-	elseif len2 == 0 then
-		return len1
-	end
+    if len1 == 0 then
+        return len2
+    elseif len2 == 0 then
+        return len1
+    end
 
-	local matrix = {}
-	for i = 0, len1 do
-		matrix[i] = {[0] = i}
-	end
+    local matrix = {}
+    for i = 0, len1 do
+        matrix[i] = {[0] = i}
+    end
 
-	for j = 0, len2 do
-		matrix[0][j] = j
-	end
+    for j = 0, len2 do
+        matrix[0][j] = j
+    end
 
-	for i = 1, len1 do
-		for j = 1, len2 do
-			local cost = string.byte(str1, i) == string.byte(str2, j) and 0 or 1
-			matrix[i][j] = math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost)
-		end
-	end
+    for i = 1, len1 do
+        for j = 1, len2 do
+            local cost = string.byte(str1, i) == string.byte(str2, j) and 0 or 1
+            matrix[i][j] = math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost)
+        end
+    end
 
-	return matrix[len1][len2]
+    return matrix[len1][len2]
 end
 
 ---Returns the Damerau-Levenshtein distance between the two strings. This is often referred as "edit distance".
@@ -132,39 +140,39 @@ end
 ---@param str2 string
 ---@return number
 function ext_string.dameraulevenshtein(str1, str2)
-	if str1 == str2 then
-		return 0
-	end
+    if str1 == str2 then
+        return 0
+    end
 
-	local len1 = #str1
-	local len2 = #str2
+    local len1 = #str1
+    local len2 = #str2
 
-	if len1 == 0 then
-		return len2
-	elseif len2 == 0 then
-		return len1
-	end
+    if len1 == 0 then
+        return len2
+    elseif len2 == 0 then
+        return len1
+    end
 
-	local matrix = {}
-	for i = 0, len1 do
-		matrix[i] = {[0] = i}
-	end
+    local matrix = {}
+    for i = 0, len1 do
+        matrix[i] = {[0] = i}
+    end
 
-	for j = 0, len2 do
-		matrix[0][j] = j
-	end
+    for j = 0, len2 do
+        matrix[0][j] = j
+    end
 
-	for i = 1, len1 do
-		for j = 1, len2 do
-			local cost = string.byte(str1, i) == string.byte(str2, j) and 0 or 1
-			matrix[i][j] = math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost)
-			if i > 1 and j > 1 and string.byte(str1, i) == string.byte(str2, j - 1) and string.byte(str1, i - 1) == string.byte(str2, j) then
-				matrix[i][j] = math.min(matrix[i][j], matrix[i - 2][j - 2] + 1)
-			end
-		end
-	end
+    for i = 1, len1 do
+        for j = 1, len2 do
+            local cost = string.byte(str1, i) == string.byte(str2, j) and 0 or 1
+            matrix[i][j] = math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost)
+            if i > 1 and j > 1 and string.byte(str1, i) == string.byte(str2, j - 1) and string.byte(str1, i - 1) == string.byte(str2, j) then
+                matrix[i][j] = math.min(matrix[i][j], matrix[i - 2][j - 2] + 1)
+            end
+        end
+    end
 
-	return matrix[len1][len2]
+    return matrix[len1][len2]
 end
 
 ---Returns true if the subsequence can be found inside `str`.
@@ -173,15 +181,15 @@ end
 ---@param str string
 ---@return boolean
 function ext_string.subsequencematch(subseq, str)
-	local matches = 0
+    local matches = 0
 
-	for i = 1, #str do
-		if string.byte(subseq, matches + 1) == string.byte(str, i) then
-			matches = matches + 1
-		end
-	end
+    for i = 1, #str do
+        if string.byte(subseq, matches + 1) == string.byte(str, i) then
+            matches = matches + 1
+        end
+    end
 
-	return matches == #subseq
+    return matches == #subseq
 end
 
 return ext_string

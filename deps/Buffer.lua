@@ -1,3 +1,5 @@
+local class = import 'class'
+
 local has_lj_buffer, lj_buffer = pcall(require, 'string.buffer')
 local has_ffi, ffi = pcall(require, 'ffi')
 
@@ -15,38 +17,89 @@ if has_ffi then
     C = ffi.os == "Windows" and ffi.load("msvcrt") or ffi.C
 end
 
-local Buffer = import('class').create('std.Buffer')
+---@class std.Buffer
+local Buffer = class.create('std.Buffer')
+
+---Creates a new Buffer
+---@param size? integer
+function Buffer:init(size) error('not implemented') end
+
+---Resets a buffer to zero, does not deallocate memory
+function Buffer:reset() error('not implemented') end
+
+--Frees all memory associated with the buffer
+function Buffer:free() error('not implemented') end
+
+---Defines the `#` operation
+---@return integer
+function Buffer:__len() error('not implemented') end
+
+---Writes data into the end of the buffer
+---@param data string
+function Buffer:write(data) error('not implemented') end
+
+---Reads data from the start of the buffer. If `n` is not provided, read all available data
+---@param n? integer The number of bytes to read
+---@return 
+function Buffer:read(n) error('not implemented') end
+
+---Skips over data from the start of the buffer. If `n` is not provided, the entire contents
+---of the buffer are removed.
+---@param n? integer The number of bytes to skip
+---@return string
+function Buffer:skip(n) error('not implemented') end
+
+---Reads data from the start of the buffer without consuming it.
+---@param n? integer The number of bytes to read
+---@return string
+function Buffer:peek(n) error('not implemented') end
+
+---@type std.Buffer
+local impl = Buffer
 
 if has_lj_buffer then
-    function Buffer:init(size)
+    ---@class std.Buffer.LuajitBuffer : std.Buffer
+    local LuajitBuffer = class.create('std.Buffer.LuajitBuffer', Buffer)
+    function LuajitBuffer:init(size)
         self.buf = lj_buffer.new(size)
     end
 
-    function Buffer:reset()
+    function LuajitBuffer:reset()
         self.buf:reset()
     end
 
-    function Buffer:free()
+    function LuajitBuffer:free()
         self.buf:free()
     end
 
-    function Buffer:len()
+    function LuajitBuffer:__len()
         return #self.buf
     end
 
-    function Buffer:write(data)
+    function LuajitBuffer:write(data)
         self.buf:put(data)
     end
 
-    function Buffer:read(n)
+    function LuajitBuffer:read(n)
         return self.buf:get(n)
     end
 
-    function Buffer:skip(n)
+    function LuajitBuffer:skip(n)
         self.buf:skip(n)
     end
+
+    function LuajitBuffer:peek(n)
+        local ptr, len = self.buf:ref()
+
+        local clamped = math.min(len, n or len)
+        return ffi.string(ptr, clamped)
+    end
+
+    impl = LuajitBuffer
 elseif has_ffi then
-    function Buffer:init(size)
+    ---@class std.Buffer.FfiBuffer : std.Buffer
+    local FfiBuffer = class.create('std.Buffer.FfiBuffer', Buffer)
+    function FfiBuffer:init(size)
         local typed_ptr
 
         if size ~= nil and size > 0 then
@@ -67,12 +120,12 @@ elseif has_ffi then
         self.len = 0
     end
 
-    function Buffer:reset()
+    function FfiBuffer:reset()
         self.start = 0
         self.len = 0
     end
 
-    function Buffer:free()
+    function FfiBuffer:free()
         C.free(ffi.gc(self.ptr, nil))
 
         self.ptr = nil
@@ -81,11 +134,11 @@ elseif has_ffi then
         self.len = 0
     end
 
-    function Buffer:len()
+    function FfiBuffer:__len()
         return self.len
     end
 
-    function Buffer:_rebase()
+    function FfiBuffer:_rebase()
         if self.ptr + self.len < self.ptr + self.start then
             ffi.copy(self.ptr, self.ptr + self.start, self.len)
         else
@@ -95,7 +148,7 @@ elseif has_ffi then
         self.start = 0
     end
 
-    function Buffer:_ensureCapacity(required_capacity)
+    function FfiBuffer:_ensureCapacity(required_capacity)
         if self.capacity < required_capacity then
             local ptr, new_capacity
             if self.capacity == 0 then
@@ -136,17 +189,17 @@ elseif has_ffi then
         end
     end
 
-    function Buffer:_ensureUnusedCapacity(required_space)
+    function FfiBuffer:_ensureUnusedCapacity(required_space)
         return self:_ensureCapacity(self.len + required_space)
     end
 
-    function Buffer:write(data)
+    function FfiBuffer:write(data)
         self:_ensureUnusedCapacity(#data)
         ffi.copy(self.ptr + self.len, data, #data)
         self.len = self.len + #data
     end
 
-    function Buffer:read(n)
+    function FfiBuffer:read(n)
         n = math.min(n or self.len, self.len)
         if n <= 0 then return "" end
 
@@ -158,27 +211,37 @@ elseif has_ffi then
         return data
     end
 
-    function Buffer:skip(n)
+    function FfiBuffer:skip(n)
         n = math.min(n or self.len, self.len)
         if n <= 0 then return end
 
         self.start = self.start + n
         self.len = self.len - n
     end
+
+    function FfiBuffer:seek(n)
+        local clamped = math.min(self.len, n or self.len)
+
+        return ffi.string(self.ptr + self.start, clamped)
+    end
+
+    impl = FfiBuffer
 else
-    function Buffer:init(size)
+    ---@class std.Buffer.FallbackBuffer : std.Buffer
+    local FallbackBuffer = class.create('std.Buffer.FallbackBuffer', Buffer)
+    function FallbackBuffer:init(size)
         self.arr = {}
     end
 
-    function Buffer:reset()
+    function FallbackBuffer:reset()
         self.arr = {}
     end
 
-    function Buffer:free()
+    function FallbackBuffer:free()
         self.arr = {}
     end
 
-    function Buffer:len()
+    function FallbackBuffer:__len()
         local len = 0
         for _, str in ipairs(self.arr) do
             len = len + #str
@@ -187,11 +250,11 @@ else
         return len
     end
 
-    function Buffer:write(data)
+    function FallbackBuffer:write(data)
         table.insert(self.arr, data)
     end
 
-    function Buffer:read(n)
+    function FallbackBuffer:read(n)
         if n == nil then
             local data = table.concat(self.arr)
 
@@ -225,13 +288,45 @@ else
         return table.concat(parts)
     end
 
-    function Buffer:skip(n)
+    function FallbackBuffer:skip(n)
         if n == nil then
             self:reset()
         end
 
         self:read(n)
     end
+
+    function FallbackBuffer:peek(n)
+        if n == nil then
+            return table.concat(self.arr)
+        end
+
+        local parts = {}
+        local len = 0
+
+        local i = 1
+        local str = self.arr[1]
+        if str == nil then return "" end
+
+        while len + #str < n do
+            len = len + #str
+            table.insert(parts, str)
+
+            str = self.arr[i]
+            i = i + 1
+
+            if str == nil then
+                return table.concat(parts)
+            end
+        end
+
+        local left = n - len
+        table.insert(parts, str:sub(1, left))
+
+        return table.concat(parts)
+    end
+
+    impl = FallbackBuffer
 end
 
-return Buffer
+return impl

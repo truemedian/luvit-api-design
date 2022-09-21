@@ -1,16 +1,10 @@
 local uv = require 'uv'
+local utils = require 'utils'
 
 ---@class std.timer
 local timer = {}
 
 ---@alias uv_timer_t userdata
-
-local function assertResume(thread, ...)
-    local success, err = coroutine.resume(thread, ...)
-    if not success then
-        error(debug.traceback(thread, err), 0)
-    end
-end
 
 ---@param delay number
 ---@return uv_timer_t
@@ -21,7 +15,7 @@ function timer.sleep(delay)
     uv.timer_start(timer_obj, delay, 0, function()
         uv.timer_stop(timer_obj)
         uv.close(timer_obj)
-        return assertResume(thread)
+        return utils.assertResume(thread)
     end)
     return coroutine.yield()
 end

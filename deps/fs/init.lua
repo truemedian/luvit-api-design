@@ -25,22 +25,41 @@ local function assertResume(thread, ...)
     end
 end
 
-local function wait()
+-- This is slightly overengineered because libuv might call the callback immediately.
+local function bind(fn, ...)
     local thread = coroutine.running()
+    local lock
 
-    return function(err, value, ...)
+    local function unlock(...)
+        if lock then
+            assertResume(thread, ...)
+        else
+            lock = { ... }
+        end
+    end
+
+    local function wait(err, value, ...)
         if err then
             local errno = string.match(err, '^([^:]+)')
 
-            assertResume(thread, nil, err, errno)
+            unlock(nil, err, errno)
         else
             if value == nil then
-                assertResume(thread, true, ...)
+                unlock(true, ...)
             else
-                assertResume(thread, value, ...)
+                unlock(value, ...)
             end
         end
     end
+
+    fn(..., wait())
+
+    if lock then
+        return unpack(lock)
+    end
+
+    lock = true
+    return coroutine.yield()
 end
 
 --- Functions that operate on paths
@@ -93,9 +112,7 @@ fs.sync.chown = fs.chown
 ---@return boolean
 ---@error nil, string, string
 function fs.copyfile(path, new_path, mode)
-    uv.fs_copyfile(path, new_path, mode, wait())
-
-    return coroutine.yield()
+    return bind(uv.fs_copyfile, path, new_path, mode)
 end
 
 ---Copies a file from `path` to `new_path`. See luv documentation for more information.
@@ -340,9 +357,7 @@ fs.sync.fchown = fs.fchown
 ---@return boolean
 ---@error nil, string, string
 function fs.fdatasync(fd)
-    uv.fs_fdatasync(fd, wait())
-
-    return coroutine.yield()
+    return bind(uv.fs_fdatasync, fd)
 end
 
 ---Equivalent to `fdatasync(2)` on Unix. See luv documentation for more information.
@@ -369,9 +384,7 @@ fs.sync.fstat = fs.fstat
 ---@return boolean
 ---@error nil, string, string
 function fs.fsync(fd)
-    uv.fs_fsync(fd, wait())
-
-    return coroutine.yield()
+    return bind(uv.fs_fsync, fd)
 end
 
 ---Equivalent to `fsync(2)` on Unix. See luv documentation for more information.
@@ -389,9 +402,7 @@ end
 ---@return boolean
 ---@error nil, string, string
 function fs.ftruncate(fd, offset)
-    uv.fs_ftruncate(fd, offset, wait())
-
-    return coroutine.yield()
+    return bind(uv.fs_ftruncate, fd, offset)
 end
 
 ---Equivalent to `ftruncate(2)` on Unix. See luv documentation for more information.
@@ -429,9 +440,7 @@ function fs.read(fd, size, offset)
         size = 4096
     end
 
-    uv.fs_read(fd, size, offset, wait())
-
-    return coroutine.yield()
+    return bind(uv.fs_read, fd, size, offset)
 end
 
 ---Equivalent to `preadv(2)` on Unix. See luv documentation for more information.
@@ -461,9 +470,7 @@ end
 ---@return integer
 ---@error nil, string, string
 function fs.sendfile(out_fd, in_fd, in_offset, length)
-    uv.fs_sendfile(out_fd, in_fd, in_offset, length, wait())
-
-    return coroutine.yield()
+    return bind(uv.fs_sendfile, out_fd, in_fd, in_offset, length)
 end
 
 ---Equivalent to `sendfile(2)` on Unix. See luv documentation for more information.
@@ -489,9 +496,7 @@ end
 ---@return integer
 ---@error nil, string, string
 function fs.write(fd, data, offset)
-    uv.fs_write(fd, data, offset, wait())
-
-    return coroutine.yield()
+    return bind(uv.fs_write, fd, data, offset)
 end
 
 ---Equivalent to `pwritev(2)` on Unix. See luv documentation for more information.
@@ -671,7 +676,6 @@ function fs.writeFile(path, data, offset)
 
     return written
 end
-
 
 ---Writes `data` to `path`.
 ---

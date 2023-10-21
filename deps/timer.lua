@@ -58,10 +58,40 @@ function timer.periodically(delay, callback, ...)
     return timer_obj
 end
 
+local checker = uv.new_check()
+local idler = uv.new_idle()
+local immediateQueue = {}
+
+local function onLoopTick()
+	local oldQueue = immediateQueue
+	immediateQueue = {}
+	for i = 1, #oldQueue do
+		oldQueue[i]()
+	end
+
+	-- Stop tick handles if the queue is (still) empty
+	if #immediateQueue == 0 then
+		uv.check_stop(checker)
+		uv.idle_stop(idler)
+	end
+end
+
 ---Call `callback` on the next event loop tick.
 ---@param callback fun(...: any)
 ---@param ... any Arguments to pass to `callback`
-function timer.immediately(callback, ...) end
+function timer.immediately(callback, ...)
+	-- If the queue is empty, handles are stopped; start them
+	if #immediateQueue == 0 then
+		uv.check_start(checker, onLoopTick)
+		uv.idle_start(idler, onLoopTick)
+	end
+
+	local args = { ... }
+	local len = select("#", ...)
+	table.insert(immediateQueue, function()
+		callback(unpack(args, 1, len))
+	end)
+end
 
 ---Stop and close a running timer handle.
 ---@param timer_obj uv_timer_t

@@ -4,9 +4,9 @@ local utils = import('utils')
 ---@class std.codec
 local codec = {}
 
----@alias std.codec.reader fun(n: integer): string
----@alias std.codec.writer fun(buffer: string|nil)
----@alias std.codec.closer { read: boolean, write: boolean, err: string|nil, check: fun() }
+---@alias std.codec.reader fun(n: integer): string | nil, ...
+---@alias std.codec.writer fun(buffer: string|nil): ...
+---@alias std.codec.closer { read: boolean, write: boolean, err: string|nil, check: fun(), onClose: fun() }
 ---@alias std.codec.stream { read: std.codec.reader, write: std.codec.writer, closer: std.codec.closer }
 
 ---@alias std.codec.encoded_reader fun(): any
@@ -55,21 +55,19 @@ function codec.wrapStream(stream)
     local read = codec.wrapReader(stream, closer)
     local write = codec.wrapWriter(stream, closer)
 
-    return { read = read, write = write, closer = closer }
+    return {read = read, write = write, closer = closer}
 end
 
 ---@param stream uv_stream_t
 ---@return std.codec.closer
 function codec.wrapCloser(stream)
-    local closer = {
-        read = false,
-        write = false,
-        err = nil
-    }
+    local closer = {read = false, write = false, err = nil}
 
     local closed = false
     function closer.close()
-        if closed then return end
+        if closed then
+            return
+        end
         closed = true
 
         if not closer.readClosed then -- the wrapped reader must dispatch closure to all waiting threads
@@ -156,7 +154,9 @@ function codec.wrapReader(stream, closer)
                 dispatch(true)
             end
 
-            if closer.read then return end
+            if closer.read then
+                return
+            end
             closer.read = true
 
             return closer.check()
@@ -192,7 +192,7 @@ function codec.wrapReader(stream, closer)
             assert(stream:read_start(onRead))
         end
 
-        queue[last] = { coroutine.running(), n }
+        queue[last] = {coroutine.running(), n}
         last = last + 1
 
         return coroutine.yield()
@@ -204,7 +204,9 @@ end
 ---@return std.codec.writer
 function codec.wrapWriter(stream, closer)
     return function(chunk)
-        if closer.write then return nil, 'already shutdown' end
+        if closer.write then
+            return nil, 'already shutdown'
+        end
 
         local wait = utils.waitCallback(coroutine.running())
 

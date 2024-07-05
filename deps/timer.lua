@@ -1,6 +1,8 @@
 local uv = require 'uv'
 local utils = require 'utils'
 
+local unpack = table.unpack or unpack
+
 ---@class std.timer
 local timer = {}
 
@@ -33,7 +35,7 @@ end
 ---@return uv_timer_t
 function timer.delay(delay, callback, ...)
     local timer_obj = uv.new_timer()
-    local args = { ... }
+    local args = {...}
     local len = select('#', ...)
     uv.timer_start(timer_obj, delay, 0, function()
         uv.timer_stop(timer_obj)
@@ -50,7 +52,7 @@ end
 ---@return uv_timer_t
 function timer.periodically(delay, callback, ...)
     local timer_obj = uv.new_timer()
-    local args = { ... }
+    local args = {...}
     local len = select('#', ...)
     uv.timer_start(timer_obj, delay, delay, function()
         callback(unpack(args, 1, len))
@@ -61,12 +63,15 @@ end
 ---Call `callback` on the next event loop tick.
 ---@param callback fun(...: any)
 ---@param ... any Arguments to pass to `callback`
-function timer.immediately(callback, ...) end
+function timer.immediately(callback, ...)
+end
 
 ---Stop and close a running timer handle.
 ---@param timer_obj uv_timer_t
 function timer.clear(timer_obj)
-    if uv.is_closing(timer_obj) then return end
+    if uv.is_closing(timer_obj) then
+        return
+    end
     uv.timer_stop(timer_obj)
     uv.close(timer_obj)
 end

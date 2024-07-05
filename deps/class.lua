@@ -11,7 +11,9 @@ function class_meta:__call(...)
     return obj
 end
 
-function class_meta:__tostring() return 'class ' .. self.__name end
+function class_meta:__tostring()
+    return 'class ' .. self.__name
+end
 
 local function protectedNewIndex(obj, field, value)
     if field:sub(1, 2) == '__' then
@@ -23,7 +25,9 @@ end
 
 ---@param cls class
 ---@return boolean
-function class.isClass(cls) return getmetatable(cls) == class_meta end
+function class.isClass(cls)
+    return getmetatable(cls) == class_meta
+end
 
 ---@param obj any
 ---@param cls class

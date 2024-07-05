@@ -48,7 +48,7 @@ function path.posix.getRoot(pathname)
     if path.posix.isAbsolute(pathname) then
         return '/'
     else
-        return "."
+        return '.'
     end
 end
 
@@ -59,7 +59,7 @@ function path.posix.join(...)
     local len = select('#', ...)
 
     if len == 0 then
-        return ""
+        return ''
     end
 
     local i = len + 1
@@ -217,7 +217,7 @@ function path.posix.basename(pathname, expected_ext)
         end
     elseif expected_ext then
         if string.find(basename, expected_ext, #basename - #expected_ext + 1, true) then
-            return string.sub(basename, 1, - #expected_ext - 1)
+            return string.sub(basename, 1, -#expected_ext - 1)
         else
             return basename
         end
@@ -242,7 +242,7 @@ end
 ---@return string
 function path.posix.extension(pathname)
     local basename = path.posix.basename(pathname)
-    return string.match(basename, '[^%.](%.[^%.]*)$') or ""
+    return string.match(basename, '[^%.](%.[^%.]*)$') or ''
 end
 
 ---Returns the relative path from `from` to `to`.
@@ -285,49 +285,69 @@ function path.posix.relative(from, to)
         i = i + 1
     end
 
-    return "."
+    return '.'
 end
 
 ---@param pathname path_t
 ---@return boolean
-function path.windows.isAbsolute(pathname) end
+function path.windows.isAbsolute(pathname)
+    error('not yet implemented')
+end
 
 ---@param pathname path_t
 ---@return path_t
-function path.windows.normalize(pathname) end
+function path.windows.normalize(pathname)
+    error('not yet implemented')
+end
 
 ---@param pathname path_t
 ---@return path_t
-function path.windows.getRoot(pathname) end
+function path.windows.getRoot(pathname)
+    error('not yet implemented')
+end
 
 ---@param paths path_t[]
 ---@return path_t
-function path.windows.join(paths) end
+function path.windows.join(paths)
+    error('not yet implemented')
+end
 
 ---@param pathname path_t
 ---@return path_t[]
-function path.windows.split(pathname) end
+function path.windows.split(pathname)
+    error('not yet implemented')
+end
 
 ---@param pathname path_t
 ---@return path_t
-function path.windows.resolve(pathname) end
+function path.windows.resolve(pathname)
+    error('not yet implemented')
+end
 
 ---@param pathname path_t
 ---@return path_t
-function path.windows.dirname(pathname) end
+function path.windows.dirname(pathname)
+    error('not yet implemented')
+end
 
 ---@param pathname path_t
 ---@return string
-function path.windows.basename(pathname) end
+function path.windows.basename(pathname)
+    error('not yet implemented')
+end
 
 ---@param pathname path_t
 ---@return string
-function path.windows.extension(pathname) end
+function path.windows.extension(pathname)
+    error('not yet implemented')
+end
 
 ---@param from path_t
 ---@param to path_t
 ---@return path_t
-function path.windows.relative(from, to) end
+function path.windows.relative(from, to)
+    error('not yet implemented')
+end
 
 -- These are provided for easy access to the current platform's path functions.
 

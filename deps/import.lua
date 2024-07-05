@@ -12,7 +12,7 @@ local fs
 if import then
     fs = import('fs').sync
 else
-    fs = { path = { posix = {} } }
+    fs = {path = {posix = {}}}
 
     function fs.path.resolve(pathname, parent)
         if parent and parent ~= '' then
@@ -35,7 +35,7 @@ else
 
     function fs.path.extension(pathname)
         local basename = fs.path.basename(pathname)
-        return string.match(basename, '[^%.](%.[^%.]*)$') or ""
+        return string.match(basename, '[^%.](%.[^%.]*)$') or ''
     end
 
     fs.path.posix.extension = fs.path.extension
@@ -79,9 +79,9 @@ import.module_cache = {}
 import.loaders = {}
 
 function import.loaders.lua(name, file, content, env, ...)
-    local fn, syntax_err = load(content, '@' .. file, "t", env)
+    local fn, syntax_err = load(content, '@' .. file, 't', env)
     if not fn then
-        error(string.format("error loading module %q from file %q:\n\t%s", name, file, syntax_err), 3)
+        error(string.format('error loading module %q from file %q:\n\t%s', name, file, syntax_err), 3)
     end
 
     return fn(...)
@@ -95,7 +95,7 @@ local function statFile(key, full_path, bundled, attempts)
     if bundled then
         local stat = luvi.bundle.stat(full_path)
         if not stat then
-            attempts[#attempts + 1] = string.format("no file %q", key)
+            attempts[#attempts + 1] = string.format('no file %q', key)
 
             return false
         end
@@ -104,7 +104,7 @@ local function statFile(key, full_path, bundled, attempts)
     else
         local stat = fs.stat(full_path)
         if not stat then
-            attempts[#attempts + 1] = string.format("no file %q", key)
+            attempts[#attempts + 1] = string.format('no file %q', key)
 
             return false
         end
@@ -147,7 +147,7 @@ local function resolvePackage(module, name, attempts)
         end
 
         if import.global_package_cache == nil then
-            import.global_package_cache = os.getenv("LUVI_CACHE_DIR") or false
+            import.global_package_cache = os.getenv('LUVI_CACHE_DIR') or false
         end
 
         if import.global_package_cache then
@@ -258,8 +258,8 @@ local function resolveRelative(module, name, attempts)
 end
 
 local Module = {}
-local Module_meta = { __index = Module }
-local env_meta = { __index = _G }
+local Module_meta = {__index = Module}
+local env_meta = {__index = _G}
 
 ---@return string|nil cache_key
 ---@return string|nil full_path
@@ -306,8 +306,8 @@ function Module:import(name, ...)
     local loader = import.loaders[full_path_extension:sub(2)]
 
     if not loader then
-        error(string.format("error loading module %q from file %q: no import loader for %q files", name, key,
-            full_path_extension), 2)
+        error(string.format('error loading module %q from file %q: no import loader for %q files', name, key,
+                            full_path_extension), 2)
     end
 
     local is_bundled = key:sub(1, 7) == 'bundle:'
@@ -350,7 +350,7 @@ function Module:import(name, ...)
         exports = new_module.exports,
         import = function(...)
             return new_module:import(...)
-        end
+        end,
     }, env_meta)
 
     local ret = loader(name, key, content, env, ...)
@@ -387,7 +387,7 @@ function import.new(entrypoint, is_bundled)
 end
 
 if not bootstrap_import then
-    return import.new("fake.lua", has_luvi):import("import", import)
+    return import.new('fake.lua', has_luvi):import('import', import)
 end
 
 return import

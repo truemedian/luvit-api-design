@@ -5,18 +5,26 @@ local uri = {}
 
 ---@param str string
 ---@return string
-function uri.percentEncode(str) end
+function uri.percentEncode(str)
+    error('not yet implemented')
+end
 
 ---@param str string
 ---@return string
-function uri.percentDecode(str) end
+function uri.percentDecode(str)
+    error('not yet implemented')
+end
 
 ---@param info uri_info
 ---@return string
-function uri.encode(info) end
+function uri.encode(info)
+    error('not yet implemented')
+end
 
 ---@param str string
 ---@return uri_info
-function uri.decode(str) end
+function uri.decode(str)
+    error('not yet implemented')
+end
 
 return uri

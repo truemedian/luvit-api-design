@@ -14,7 +14,7 @@ if has_ffi then
     ]])
 
     -- avoids issues when statically linked on windows
-    C = ffi.os == "Windows" and ffi.load("msvcrt") or ffi.C
+    C = ffi.os == 'Windows' and ffi.load('msvcrt') or ffi.C
 end
 
 ---@class std.Buffer
@@ -22,40 +22,56 @@ local Buffer = class.create('std.Buffer')
 
 ---Creates a new Buffer
 ---@param size? integer
-function Buffer:init(size) error('not implemented') end
+function Buffer:init(size)
+    error('not implemented')
+end
 
 ---Resets a buffer to zero, does not deallocate memory
-function Buffer:reset() error('not implemented') end
+function Buffer:reset()
+    error('not implemented')
+end
 
---Frees all memory associated with the buffer
-function Buffer:free() error('not implemented') end
+-- Frees all memory associated with the buffer
+function Buffer:free()
+    error('not implemented')
+end
 
 ---Defines the `#` operation
 ---@return integer
-function Buffer:__len() error('not implemented') end
+function Buffer:__len()
+    error('not implemented')
+end
 
 ---Writes data into the end of the buffer
 ---@param data string
-function Buffer:write(data) error('not implemented') end
+function Buffer:write(data)
+    error('not implemented')
+end
 
 ---Reads data from the start of the buffer. If `n` is not provided, read all available data
 ---@param n? integer The number of bytes to read
----@return 
-function Buffer:read(n) error('not implemented') end
+---@return string
+function Buffer:read(n)
+    error('not implemented')
+end
 
 ---Skips over data from the start of the buffer. If `n` is not provided, the entire contents
 ---of the buffer are removed.
 ---@param n? integer The number of bytes to skip
 ---@return string
-function Buffer:skip(n) error('not implemented') end
+function Buffer:skip(n)
+    error('not implemented')
+end
 
 ---Reads data from the start of the buffer without consuming it.
 ---@param n? integer The number of bytes to read
 ---@return string
-function Buffer:peek(n) error('not implemented') end
+function Buffer:peek(n)
+    error('not implemented')
+end
 
 ---@type std.Buffer
-local impl = Buffer
+local impl
 
 if has_lj_buffer then
     ---@class std.Buffer.LuajitBuffer : std.Buffer
@@ -201,7 +217,9 @@ elseif has_ffi then
 
     function FfiBuffer:read(n)
         n = math.min(n or self.len, self.len)
-        if n <= 0 then return "" end
+        if n <= 0 then
+            return ''
+        end
 
         local data = ffi.string(self.ptr, n)
 
@@ -213,7 +231,9 @@ elseif has_ffi then
 
     function FfiBuffer:skip(n)
         n = math.min(n or self.len, self.len)
-        if n <= 0 then return end
+        if n <= 0 then
+            return
+        end
 
         self.start = self.start + n
         self.len = self.len - n
@@ -267,7 +287,9 @@ else
         local len = 0
 
         local str = self.arr[1]
-        if str == nil then return "" end
+        if str == nil then
+            return ''
+        end
 
         while len + #str < n do
             len = len + #str
@@ -306,7 +328,9 @@ else
 
         local i = 1
         local str = self.arr[1]
-        if str == nil then return "" end
+        if str == nil then
+            return ''
+        end
 
         while len + #str < n do
             len = len + #str

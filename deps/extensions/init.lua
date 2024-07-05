@@ -1,4 +1,3 @@
-
 ---@class std.extensions
 local extensions = {}
 

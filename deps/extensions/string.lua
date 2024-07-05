@@ -166,7 +166,8 @@ function ext_string.dameraulevenshtein(str1, str2)
         for j = 1, len2 do
             local cost = string.byte(str1, i) == string.byte(str2, j) and 0 or 1
             matrix[i][j] = math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost)
-            if i > 1 and j > 1 and string.byte(str1, i) == string.byte(str2, j - 1) and string.byte(str1, i - 1) == string.byte(str2, j) then
+            if i > 1 and j > 1 and string.byte(str1, i) == string.byte(str2, j - 1) and string.byte(str1, i - 1) ==
+                string.byte(str2, j) then
                 matrix[i][j] = math.min(matrix[i][j], matrix[i - 2][j - 2] + 1)
             end
         end

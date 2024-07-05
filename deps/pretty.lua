@@ -104,7 +104,9 @@ pretty.default_max_depth = 8
 
 ---@vararg any
 function pretty.prettyPrint(...)
-    if pretty.stdout == nil then return end
+    if pretty.stdout == nil then
+        return
+    end
 
     local n = select('#', ...)
 
@@ -125,7 +127,9 @@ end
 
 ---@vararg string
 function pretty.print(...)
-    if pretty.stdout == nil then return end
+    if pretty.stdout == nil then
+        return
+    end
 
     local n = select('#', ...)
 
@@ -183,8 +187,8 @@ end
 
 local character_escapes = {}
 
-local single_quote1 = pretty.colorize("'", 'quotes', 'string', true)
-local single_quote2 = pretty.colorize("'", 'quotes', nil, true)
+local single_quote1 = pretty.colorize('\'', 'quotes', 'string', true)
+local single_quote2 = pretty.colorize('\'', 'quotes', nil, true)
 local double_quote1 = pretty.colorize('"', 'quotes', 'string', true)
 local double_quote2 = pretty.colorize('"', 'quotes', nil, true)
 local open_brace = pretty.colorize('{', 'braces', nil, true)
@@ -209,7 +213,7 @@ character_escapes[12] = pretty.colorize('\\f', 'escape', 'string', true)
 character_escapes[13] = pretty.colorize('\\r', 'escape', 'string', true)
 
 character_escapes[34] = pretty.colorize('\\"', 'escape', 'string', true)
-character_escapes[39] = pretty.colorize("\\'", 'escape', 'string', true)
+character_escapes[39] = pretty.colorize('\\\'', 'escape', 'string', true)
 character_escapes[92] = pretty.colorize('\\\\', 'escape', 'string', true)
 
 for i = 128, 255 do
@@ -230,12 +234,12 @@ function pretty.dump(thing, depth, no_color)
         local typ = type(value)
 
         if typ == 'string' then
-            if string.find(value, "'", 1, true) and not string.find(value, '"', 1, true) then
+            if string.find(value, '\'', 1, true) and not string.find(value, '"', 1, true) then
                 local escaped = string.gsub(value, '[\\%c\128-\255]', character_escapes)
 
                 return double_quote1 .. escaped .. double_quote2
             else
-                local escaped = string.gsub(value, "[\\'%c\128-\255]", character_escapes)
+                local escaped = string.gsub(value, '[\\\'%c\128-\255]', character_escapes)
 
                 return single_quote1 .. escaped .. single_quote2
             end
@@ -243,7 +247,9 @@ function pretty.dump(thing, depth, no_color)
             seen[value] = true
 
             local total = 0
-            for _ in pairs(value) do total = total + 1 end
+            for _ in pairs(value) do
+                total = total + 1
+            end
 
             local ret = {}
             ret.integral = {}
@@ -384,6 +390,8 @@ function pretty.dump(thing, depth, no_color)
                 elseif type(b.value) == 'table' then
                     return true
                 end
+
+                return type(a.value) < type(b.value)
             end)
 
             for j, pair in ipairs(value) do

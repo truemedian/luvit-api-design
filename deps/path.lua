@@ -1,16 +1,16 @@
 local uv = require 'uv'
 
----@class std.fs.path
+---@alias path_t string
+
+---@class std.path
 local path = {}
 
----@class std.fs.path.posix
+---@class std.path.posix
 path.posix = {}
-
 path.posix.sep = '/'
 
----@class std.fs.path.windows
+---@class std.path.windows
 path.windows = {}
-
 path.windows.sep = '\\'
 
 ---Whether a path is absolute.

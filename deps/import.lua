@@ -9,12 +9,17 @@ end
 ---@type std.fs
 local fs
 
-if import then
-    fs = import('fs').sync
-else
-    fs = {path = {posix = {}}}
+---@type std.path
+local path
 
-    function fs.path.resolve(pathname, parent)
+if import then
+    fs = import('fs')
+    path = import('path')
+else
+    fs = {}
+    path = {posix = {}}
+
+    function path.resolve(pathname, parent)
         if parent and parent ~= '' then
             return parent .. '/' .. pathname
         end
@@ -22,35 +27,35 @@ else
         return pathname
     end
 
-    fs.path.posix.resolve = fs.path.resolve
+    path.posix.resolve = path.resolve
 
-    function fs.path.dirname(pathname)
-        return string.match(pathname, '^(.+)/[^/]+/*$') or ''
+    function path.dirname(pathname)
+        return string.match(pathname, '^(/?.-)/?[^/]+/*$') or ''
     end
 
-    function fs.path.basename(pathname, expected_ext)
+    function path.basename(pathname, expected_ext)
         assert(expected_ext == nil)
         return string.match(pathname, '([^/]+)/*$')
     end
 
-    function fs.path.extension(pathname)
-        local basename = fs.path.basename(pathname)
+    function path.extension(pathname)
+        local basename = path.basename(pathname)
         return string.match(basename, '[^%.](%.[^%.]*)$') or ''
     end
 
-    fs.path.posix.extension = fs.path.extension
+    path.posix.extension = path.extension
 
-    function fs.path.relative(from, to)
+    function path.relative(from, to)
         return from
     end
 
-    fs.path.posix.relative = fs.path.relative
+    path.posix.relative = path.relative
 
-    function fs.path.join(...)
+    function path.join(...)
         return table.concat({...}, '/')
     end
 
-    fs.path.posix.join = fs.path.join
+    path.posix.join = path.join
 
     function fs.stat(path)
         return uv.fs_stat(path)
@@ -68,8 +73,6 @@ else
         return data
     end
 end
-
-local path = fs.path
 
 local has_luvi, luvi = pcall(require, 'luvi')
 

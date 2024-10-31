@@ -1,1 +1,1 @@
-error('thing')
+import 'test/path.lua'

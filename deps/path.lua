@@ -1,7 +1,6 @@
 local uv = require 'uv'
 
 ---@alias path_t string
-
 ---@class std.path
 local path = {}
 
@@ -13,6 +12,13 @@ path.posix.sep = '/'
 path.windows = {}
 path.windows.sep = '\\'
 
+---Whether a character is a valid path separator.
+---@param char string
+---@return boolean
+function path.posix.isSeparator(char)
+    return char == '/'
+end
+
 ---Whether a path is absolute.
 ---@param pathname path_t
 ---@return boolean
@@ -20,7 +26,54 @@ function path.posix.isAbsolute(pathname)
     return string.sub(pathname, 1, 1) == '/'
 end
 
----Returns a new path with no empty or redundant components
+---Strip the last component from a file path.
+---
+---If the path is a file in the current directory (no directory component) or
+---the root directory, then this returns an empty string.
+---@param pathname path_t 
+---@return path_t
+function path.posix.dirname(pathname)
+    return string.match(pathname, '^(/?.-)/?[^/]+/*$') or ''
+end
+
+---Returns the name of a file from a path. Any trailing separators are ignored.
+---@param pathname path_t
+---@return string 
+function path.posix.basename(pathname)
+    return string.match(pathname, '([^/]+)/*$') or ''
+end
+
+---Returns the last extension of the file name (if any). Only the last `.` is
+---considered when determining the file extension.
+---
+---Files that start with a `.` do not consider the first `.` as an extension.
+---
+---Examples:
+--- - `'init.lua'` ⇒ `'.lua'`
+--- - `'src/init.lua'` ⇒ `'.lua'`
+--- - `'.gitignore'` ⇒ `''`
+--- - `'.image.png'` ⇒ `'.png'`
+--- - `'src/init.lua.keep/'` ⇒ `'.keep'`
+---@param pathname path_t
+---@return string
+function path.posix.extension(pathname)
+    local basename = path.posix.basename(pathname)
+    return string.match(basename, '[^%.](%.[^%.]*)$') or ''
+end
+
+---Returns the root component of a given file path. This is either
+---`'/'` (the root directory) or `'.'` (the current directory).
+---@param pathname path_t
+---@return path_t
+function path.posix.getRoot(pathname)
+    if path.posix.isAbsolute(pathname) then
+        return '/'
+    else
+        return '.'
+    end
+end
+
+---Returns a new path with no empty (`''`) or redundant (`'.'`) components
 ---@param pathname path_t
 ---@return path_t
 function path.posix.normalize(pathname)
@@ -33,7 +86,6 @@ function path.posix.normalize(pathname)
     end
 
     local coalesced = table.concat(parts, '/')
-
     if path.posix.isAbsolute(pathname) then
         return '/' .. coalesced
     else
@@ -41,18 +93,10 @@ function path.posix.normalize(pathname)
     end
 end
 
----Returns the root of the path, will be "." for relative paths.
----@param pathname path_t
----@return path_t
-function path.posix.getRoot(pathname)
-    if path.posix.isAbsolute(pathname) then
-        return '/'
-    else
-        return '.'
-    end
-end
-
----Joins a list of paths together, does not duplicate path separators. Starts at the last absolute path if any are provided.
+---Naively combines a series of paths together with the native path separator.
+---
+---The resulting path will begin with the last provided absolute component if
+---any are provided.
 ---@param ... path_t
 ---@return path_t
 function path.posix.join(...)
@@ -93,12 +137,13 @@ function path.posix.join(...)
     return table.concat(parts, '/')
 end
 
----Splits a path into its directory components.
+---Splits a path into its directory components. The root of the path (`/` or
+---`.`) is processed separately and stored in the `root` field.
 ---
----Empty segments are ignored and stripped out from the result.
----Beware: This includes the first component that is present on absolute paths.
+---Duplicate path separators are treated as a single separator. No other
+---normalization is performed.
 ---@param pathname path_t
----@return path_t[]
+---@return { [number]: path_t, root: string|nil }
 function path.posix.split(pathname)
     if pathname == '/' then
         return {}
@@ -108,6 +153,15 @@ function path.posix.split(pathname)
 
     local pos = 1
     local n = 1
+
+    if pathname:sub(1,1) == '/' then
+        parts.root = '/'
+        pos = 2
+    elseif pathname:sub(1,2) == './' then
+        parts.root = '.'
+        pos = 3
+    end
+
     while true do
         local next_sep = string.find(pathname, '/', pos, true)
 
@@ -185,66 +239,6 @@ function path.posix.resolve(pathname, parent)
     end
 end
 
----Strip the last component from a path.
----
----If the path is a file in the current directory (no directory component) or the root directory (just `/`)
----Then this returns the empty string
----@param pathname path_t
----@return path_t
-function path.posix.dirname(pathname)
-    return string.match(pathname, '^(.+)/[^/]+/*$') or ''
-end
-
----Returns the name of a file from a path.
----
----If the path has trailing slashes, they are stripped off and ignored.
----
----If `expected_ext` is true, this will always strip the extension from the name.
----If `expected_ext` is a string, this will only strip that string from the end.
----@param pathname path_t
----@param expected_ext? string|true
----@return string
-function path.posix.basename(pathname, expected_ext)
-    local basename = string.match(pathname, '([^/]+)/*$')
-
-    if expected_ext == true then
-        local last_dot = string.find(basename, '%.[^%.]*$')
-
-        if last_dot and last_dot ~= 1 then
-            return string.sub(basename, 1, last_dot - 1)
-        else
-            return basename
-        end
-    elseif expected_ext then
-        if string.find(basename, expected_ext, #basename - #expected_ext + 1, true) then
-            return string.sub(basename, 1, -#expected_ext - 1)
-        else
-            return basename
-        end
-    else
-        return basename
-    end
-end
-
----Returns the extension of the file name (if any).
----
----Files that end with a `.` are considered to have no extension.
----Files that start with a `.` do not consider the first `.` as an extension.
----
----Examples:
----    'init.lua' => '.lua'
----    'src/init.lua' => '.lua'
----    '.gitignore' => ''
----    'keep.' => '.'
----    'init.lua.keep' => '.keep'
----    'src/init.lua.keep/' => '.keep'
----@param pathname path_t
----@return string
-function path.posix.extension(pathname)
-    local basename = path.posix.basename(pathname)
-    return string.match(basename, '[^%.](%.[^%.]*)$') or ''
-end
-
 ---Returns the relative path from `from` to `to`.
 ---
 ---If `from` and `to` each resolve to the same path (after calling `resolve` on each), `"."` is returned.
@@ -288,41 +282,40 @@ function path.posix.relative(from, to)
     return '.'
 end
 
+-------------------------------------------------------------------------------
+
+---Whether a character is a valid path separator.
+---@param char string
+---@return boolean
+function path.windows.isSeparator(char)
+    return char == '/' or char == '\\'
+end
+
+---Whether a path is absolute.
 ---@param pathname path_t
 ---@return boolean
 function path.windows.isAbsolute(pathname)
-    error('not yet implemented')
+    if #pathname == 0 then
+        return false
+    end
+
+    -- /name
+    if path.windows.isSeparator(string.sub(pathname, 1, 1)) then
+        return true
+    end
+
+    if #pathname < 3 then
+        return false
+    end
+
+    -- C:/name
+    if string.sub(pathname, 2, 2) == ':' and path.windows.isSeparator(string.sub(pathname, 3, 3)) then
+        return true
+    end
+
+    return false
 end
 
----@param pathname path_t
----@return path_t
-function path.windows.normalize(pathname)
-    error('not yet implemented')
-end
-
----@param pathname path_t
----@return path_t
-function path.windows.getRoot(pathname)
-    error('not yet implemented')
-end
-
----@param paths path_t[]
----@return path_t
-function path.windows.join(paths)
-    error('not yet implemented')
-end
-
----@param pathname path_t
----@return path_t[]
-function path.windows.split(pathname)
-    error('not yet implemented')
-end
-
----@param pathname path_t
----@return path_t
-function path.windows.resolve(pathname)
-    error('not yet implemented')
-end
 
 ---@param pathname path_t
 ---@return path_t
@@ -342,6 +335,36 @@ function path.windows.extension(pathname)
     error('not yet implemented')
 end
 
+---@param pathname path_t
+---@return path_t
+function path.windows.getRoot(pathname)
+    error('not yet implemented')
+end
+
+---@param pathname path_t
+---@return path_t
+function path.windows.normalize(pathname)
+    error('not yet implemented')
+end
+
+---@param ... path_t
+---@return path_t
+function path.windows.join(...)
+    error('not yet implemented')
+end
+
+---@param pathname path_t
+---@return path_t[]
+function path.windows.split(pathname)
+    error('not yet implemented')
+end
+
+---@param pathname path_t
+---@return path_t
+function path.windows.resolve(pathname)
+    error('not yet implemented')
+end
+
 ---@param from path_t
 ---@param to path_t
 ---@return path_t
@@ -351,15 +374,16 @@ end
 
 -- These are provided for easy access to the current platform's path functions.
 
+path.isSeparator = path.posix.isSeparator
 path.isAbsolute = path.posix.isAbsolute
-path.normalize = path.posix.normalize
-path.getRoot = path.posix.getRoot
-path.join = path.posix.join
-path.split = path.posix.split
-path.resolve = path.posix.resolve
 path.dirname = path.posix.dirname
 path.basename = path.posix.basename
 path.extension = path.posix.extension
+path.getRoot = path.posix.getRoot
+path.normalize = path.posix.normalize
+path.join = path.posix.join
+path.split = path.posix.split
+path.resolve = path.posix.resolve
 path.relative = path.posix.relative
 
 return path
